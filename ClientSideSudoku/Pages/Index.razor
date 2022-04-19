@@ -28,6 +28,7 @@
 
     private void Save()
     {
+
         var path = Path.Combine(sudokuDir,$"{sudoku.Name}.sud");
         File.WriteAllText(path, sudoku.Serialize());
     }

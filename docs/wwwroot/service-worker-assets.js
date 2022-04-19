@@ -9,10 +9,6 @@
       "url": "_framework\/dotnet.6.0.3.0af3euppks.js"
     },
     {
-      "hash": "sha256-scXGarUHqfFWPq0d6kt1FgrQvd1\/ndIwUTFptznHbsc=",
-      "url": "_framework\/dotnet.timezones.blat"
-    },
-    {
       "hash": "sha256-AW7xegLOO5MgfdWQ5okeetFKzb4byQc4c+tkQjAO8+0=",
       "url": "_framework\/dotnet.wasm"
     },
@@ -33,7 +29,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-K\/HexJyACsW+7D7Kg1k8AnnRw6CAKoWgC4P++PuGvHU=",
+      "hash": "sha256-A61sTEZV0Tc0HlULb5cRrM5M2fmharGce52xI418YIk=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -181,6 +177,10 @@
       "url": "ClientSideSudoku.styles.css"
     },
     {
+      "hash": "sha256-8ZRc1sGeVrPBx4lD717BgRaQekyh78QKV9SKsdt638U=",
+      "url": ".nojekyll"
+    },
+    {
       "hash": "sha256-uc89M77B3FEQuuacjwhQaXX77JQi+xBt6SE7wo2f4OU=",
       "url": "404.html"
     },
@@ -265,5 +265,5 @@
       "url": "_content\/Sudoku\/Sudoku.bundle.scp.css"
     }
   ],
-  "version": "UvKnzbMH"
+  "version": "17dHvlW4"
 };

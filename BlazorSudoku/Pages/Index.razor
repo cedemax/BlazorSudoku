@@ -1,0 +1,75 @@
+﻿@page "/"
+@inject NavigationManager NavManager
+<PageTitle>Index</PageTitle>
+
+<PageTitle>Sudoku</PageTitle>
+
+<h1>Sudoku</h1>
+
+@{
+
+    var size = 100.0;
+    if (!Directory.Exists(sudokuDir))
+        Directory.CreateDirectory(sudokuDir);
+    var savedSudokus = Directory.GetFiles(sudokuDir)
+        .Where(x => x.EndsWith(".sud"))
+        .Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
+}
+
+
+<div class="d-flex">
+    <div class="form-group">
+        <input type="text" class="form-control" @bind="@sudoku.Name" placeholder="Sudoku Name" id="name"/>
+    </div>
+   
+    <div class="form-group">
+        <select class="form-control" @onchange="Parse">
+            <option disabled selected>Load a sudoku</option>
+            @foreach(var savedSudoku in savedSudokus)
+            {
+                <option>@savedSudoku</option>
+            }
+        </select>
+    </div>
+    <button class="btn btn-primary" @onclick="Save">Save</button>
+    <button class="btn btn-danger" @onclick="Delete">Delete</button>
+    <button class="btn btn-primary" @onclick="Reload">Reload</button>
+</div>
+<hr />
+
+<BlazorSudoku.SudokuGame sudoku="@sudoku" @ref="game"></BlazorSudoku.SudokuGame>
+
+
+@code{
+    private BlazorSudoku.SudokuGame game;
+
+    private Sudoku sudoku = Sudoku.StandardNxN(3);
+    private string sudokuDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "SavedSudokus");
+
+    private void Reload()
+    {
+        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+    }
+
+    private void Save()
+    {
+        var path = Path.Combine(sudokuDir,$"{sudoku.Name}.sud");
+        File.WriteAllText(path, sudoku.Serialize());
+    }
+    private void Delete()
+    {
+        var path = Path.Combine(sudokuDir,$"{sudoku.Name}.sud");
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+    private void Parse(ChangeEventArgs changeEvent)
+    {
+        var val = (string)changeEvent.Value;
+        var path = Path.Combine(sudokuDir,$"{val}.sud");
+        if (File.Exists(path))
+        {
+            sudoku = Sudoku.Parse(File.ReadAllText(path));
+            game.Step();
+        }
+    }
+}

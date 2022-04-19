@@ -249,7 +249,7 @@
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-fqAaAEwPdQW8y2OhztoDHS9wbsOE\/SQF5HIGcXAVuAM=",
+      "hash": "sha256-WYZyi\/xiUf7Sm\/167ENQn+aXTbgJKCWhQh9oc+zYuiE=",
       "url": "index.html"
     },
     {
@@ -265,5 +265,5 @@
       "url": "_content\/Sudoku\/Sudoku.bundle.scp.css"
     }
   ],
-  "version": "h67e+R38"
+  "version": "UvKnzbMH"
 };

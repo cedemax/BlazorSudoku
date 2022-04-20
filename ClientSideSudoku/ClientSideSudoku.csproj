@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="xcopy &quot;$(SolutionDir)BlazorSudoku\wwwroot\css\site.css*&quot; &quot;$(SolutionDir)ClientSideSudoku\wwwroot\css\site.css*&quot; /Y" />
+    <Exec Command="if $(ConfigurationName) == Debug xcopy &quot;$(SolutionDir)BlazorSudoku\wwwroot\css\site.css*&quot; &quot;$(SolutionDir)ClientSideSudoku\wwwroot\css\site.css*&quot; /Y" />
   </Target>
 
 </Project>

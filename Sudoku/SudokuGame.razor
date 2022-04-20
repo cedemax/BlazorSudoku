@@ -1,200 +1,251 @@
 ﻿@namespace BlazorSudoku
 @using BlazorSudoku
 @using BlazorSudoku.Hints
-@inject NavigationManager uriHelper;
+@using Microsoft.JSInterop
+@inject IJSRuntime JsRuntime
+
 <PageTitle>Sudoku</PageTitle>
-
-<h1>Sudoku</h1>
-
-@{
-
-    var size = 100.0;
-}
-<div class="d-flex">
-    <button class="btn btn-info" @onclick="Undo">Undo</button>
-    <button class="btn btn-info" @onclick="Redo">Redo</button>
-    <button class="btn btn-primary" @onclick="Grade">Grade</button>
-</div>
-<hr />
-<div>
-    @foreach(var tech in SudokuTechnique.GetAllTechiques())
-    {
-        <div>
-        
-        <div class="btn-group" style="width:50%">
-            <button class="btn btn-outline-primary w-100" disabled>@tech.GetType().Name</button>
-            <button class="btn btn-primary" @onclick="() => {Show(tech.GetMove(sudoku));}"> Hint</button>
-            <button class="btn btn-primary" @onclick="() => {Perform(tech.GetMoves(sudoku));}">All</button>
-            <button class="btn btn-primary" @onclick="() => {Show(tech.TrySetValue(sudoku));}">Single</button>
+<div class="sContainer @(wide?"wide":"thin")">
+    <div class="sHeader @(wide?"wide":"thin")">
+        <div class="d-flex">
+            <div class="w-100">
+                <h4 title="@gradeDescription" data-toggle="tooltip">@(sudoku.Name??"NoName") [@grade]</h4>
+            </div>
+            <button class="btn btn-info" @onclick="Undo">Undo</button>
+            <button class="btn btn-info" @onclick="Redo">Redo</button>
+            <button class="btn btn-primary" @onclick="Grade">Grade</button>
         </div>
-        </div>
-    }
-</div>
-<hr />
-    <ol>
-@foreach(var move in Moves)
-{
-    <li>
-        @move.Name [@move.Complexity]: <button class="btn btn-sm btn-primary" @onclick="() => Perform(move)">Perform</button>
-    </li>
-}
-    </ol>
-<hr />
-<h3 title="@gradeDescription" data-toggle="tooltip">@(sudoku.Name??"NoName") [@grade]</h3>
-<div class="sudoku @(sudoku.IsValid()==1?"done":"")" style="height:@(sudoku.N*size)px;">
-    @foreach(var cell in sudoku.Cells)
-    {
-        var bl = cell.LeftBorder;
-        var br = cell.RightBorder;
-        var bt = cell.TopBorder;
-        var bb = cell.BottomBorder;
-        var error = 0.0;
-        if (cell.Error)
-            error += 0.1;
-        error += cell.Domains.Count(x => x.Error) * 0.1;
-        var r = error > 0 ? 200 : 0;
-        var g = 0;
-        var b = 0;
-        <div class="cell" style="left:@(cell.X*size)px;top:@(cell.Y*size)px;width:@(size)px;height:@(size)px;border-width:@(bt)px @(br)px @(bb)px @(bl)px;background:rgba(@r,0,@b,@error);">
-            @if (cell.Value.HasValue)
+        <hr />
+        <div class="techButtons">
+            @foreach(var tech in SudokuTechnique.GetAllTechiques().OrderBy(x => x.MinComplexity))
             {
-                <div class="cellValue" style="font-size:@(size*0.66)px;">@(cell.Value+1)</div>
-            }
-            else
-            {
-                <div class="cellOptions @(cell.PossibleValues.Count == 0?"bad":cell.PossibleValues.Count == 1 && !cell.Value.HasValue?"good":"")">
-                    @for(var n = 0; n < sudoku.N; ++n)
-                    {
-                        var nn = n;
-                        if (cell.PossibleValues.Contains(n))
-                        {
-                            <div class="cellOption" style="left:@((n%sudoku.SqrtN)*size/sudoku.SqrtN)px;top:@((n/sudoku.SqrtN)*size/sudoku.SqrtN)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px"
-                                @onclick="args => SetNumber(cell,nn,args)" 
-                                @oncontextmenu:preventDefault="true"
-                                @oncontextmenu="args => SetNumber(cell,nn,args)">
-                                @(n+1)
-                            </div>
-                        }
-                    }
+                <div class="btn-group techButton">
+                    <button class="btn btn-outline-primary w-100" disabled>@tech.GetType().Name</button>
+                    <button class="btn btn-primary" @onclick="() => {Show(tech.GetMove(sudoku));}"> Hint</button>
+                    <button class="btn btn-primary" @onclick="() => {Perform(tech.GetMoves(sudoku));}">All</button>
+                    <button class="btn btn-@(AutoTech.Any(x => x.GetType() == tech.GetType())?"warning":"primary")" @onclick="() => {Auto(tech);}">Auto</button>
                 </div>
             }
         </div>
-    }
-    @foreach(var domain in sudoku.Domains)
-    {
-        <div class="domain">
-            @foreach(var cell in domain.Cells)
+        <hr />
+        <ol>
+        @foreach(var move in Moves)
+        {
+        <li>
+            @move.Name [@move.Complexity]: <button class="btn btn-sm btn-primary" @onclick="() => Perform(move)">Perform</button>
+        </li>
+        }
+        </ol>
+    </div>
+    <div class="sInner @(wide?"wide":"thin")">
+        <div class="sudoku @(sudoku.IsValid()==1?"done":"")" style="height:@(sudoku.N*size)px;width:@(sudoku.N*size)px;">
+            @foreach(var cell in sudoku.Cells)
             {
+                var bl = Math.Round(Math.Max(1,size/50)*cell.LeftBorder);
+                var br = Math.Round(Math.Max(1,size/50)*cell.RightBorder);
+                var bt = Math.Round(Math.Max(1,size/50)*cell.TopBorder);
+                var bb = Math.Round(Math.Max(1,size/50)*cell.BottomBorder);
+                var error = 0.0;
+                if (cell.Error)
+                    error += 0.1;
+                error += cell.Domains.Count(x => x.Error) * 0.1;
+                var r = error > 0 ? 200 : 0;
+                var g = 0;
+                var b = 0;
+                <div class="cell" style="left:@(cell.X*size)px;top:@(cell.Y*size)px;width:@(size)px;height:@(size)px;border-width:@(bt)px @(br)px @(bb)px @(bl)px;background:rgba(@r,0,@b,@error);">
+                    @if (cell.Value.HasValue)
+                    {
+                        <div class="cellValue" style="font-size:@(size*0.66)px;">@(cell.Value+1)</div>
+                    }
+                    else
+                    {
+                        <div class="cellOptions @(cell.PossibleValues.Count == 0?"bad":cell.PossibleValues.Count == 1 && !cell.Value.HasValue?"good":"")">
+                            @for(var n = 0; n < sudoku.N; ++n)
+                            {
+                                var nn = n;
+                                if (cell.PossibleValues.Contains(n))
+                                {
+                                    <div class="cellOption" style="left:@((n%sudoku.SqrtN)*size/sudoku.SqrtN)px;top:@((n/sudoku.SqrtN)*size/sudoku.SqrtN)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px"
+                                        @onclick="args => SetNumber(cell,nn,args)" 
+                                        @oncontextmenu:preventDefault="true"
+                                        @oncontextmenu="args => SetNumber(cell,nn,args)">
+                                        @(n+1)
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            @foreach(var domain in sudoku.Domains)
+            {
+                <div class="domain">
+                    @foreach(var cell in domain.Cells)
+                    {
                 
 
-            }
-        </div>
-    }
-    @foreach(var move in Moves)
-    {
-        <div class="move">
-            @foreach(var hint in move.Hints)
-            {
-                switch (hint)
-                {
-                    case SudokuCellHint cellHint:
-                        <div class="hint">
-                        <div class="subHint" style="left:@(cellHint.Cell.X*size)px;top:@(cellHint.Cell.Y*size)px;width:@(size)px;height:@(size)px;background-color:rgba(@cellHint.Color.R,@cellHint.Color.G,@cellHint.Color.B,@(cellHint.Color.A/255.0))">
-                        </div>
-                        </div>
-                        break;
-                    case SudokuDomainHint domainHint:
-                        <div class="hint">
-                            @foreach(var dCell in domainHint.Domain.Cells)
-                            {
-                                <div class="subHint" style="left:@(dCell.X*size)px;top:@(dCell.Y*size)px;width:@(size)px;height:@(size)px;background-color:rgba(@domainHint.Color.R,@domainHint.Color.G,@domainHint.Color.B,@(domainHint.Color.A/255.0))">
-                                </div>
-                            }
-                        </div>
-                        break;
-                    case SudokuCellOptionHint cellOptionHint:
-                        {
-                            var cell = cellOptionHint.Cell;
-                            var n = cellOptionHint.Option;
-                            <div class="hint">
-                            <div class="subHint" style="left:@(cell.X*size+(n%sudoku.SqrtN)*size/sudoku.SqrtN)px;top:@(cell.Y*size+(n/sudoku.SqrtN)*size/sudoku.SqrtN)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px;background-color:rgba(@cellOptionHint.Color.R,@cellOptionHint.Color.G,@cellOptionHint.Color.B,@(cellOptionHint.Color.A/255.0));">
-                            </div>
-                            </div>
-                        }
-                        break;
-                    case SudokuLinkHint linkHint:
-                        {
-                            var pos = new List<(double x, double y)>();
-                            <div class="hint">
-
-                            @foreach(var lh in linkHint.AB)
-                            {
-                                var ca = lh.Option.Cell;
-                                var na = lh.Option.Value;
-                                var x = ca.X * size + (na % sudoku.SqrtN) * size / sudoku.SqrtN;
-                                var y = ca.Y * size + (na / sudoku.SqrtN) * size / sudoku.SqrtN;
-                                pos.Add((x,y));
-                                var c = lh.Color;
-                                <div class="subHint" style="left:@(x)px;top:@(y)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px;background-color:rgba(@c.R,@c.G,@c.B,@(c.A/255.0));">
-                                </div>
-                              
-                            }
-                                @{
-                                    var dy = pos[1].y - pos[0].y;
-                                    var dx = pos[1].x - pos[0].x;
-                                    var angle = 180*Math.Atan2(dy,dx)/Math.PI;
-                                    var len = Math.Sqrt(dx * dx + dy * dy);
-                                }
-                                <div class="subHint link @(linkHint.Link.Strong?"strong":"")" style="left:@(pos[0].x+0.5*size/sudoku.SqrtN)px;top:@(pos[0].y+0.5*size/sudoku.SqrtN)px;width:@(len)px;transform:rotate(@(angle)deg)">
-                                </div>
-                          
-                            </div>
-                        }
-                        break;
-                }
-            }
-            @foreach(var op in move.Operations)
-            {
-                <div class="hint">
-                    @switch (op.Action)
-                    {
-                        case SudokuActionType.SetValue:
-                        case SudokuActionType.SetOnlyPossible:
-                            <div class="subHint action" style="left:@(op.Cell.X*size)px;top:@(op.Cell.Y*size)px;width:@(size)px;height:@(size)px;font-size:@(size*0.66)px;">
-                                @(op.Value+1)
-                            </div>
-                            break;
-                        case SudokuActionType.RemoveOption:
-                            var n = op.Value;
-                            <div class="subHint action" style="left:@(op.Cell.X*size+(n%sudoku.SqrtN)*size/sudoku.SqrtN)px;top:@(op.Cell.Y*size+(n/sudoku.SqrtN)*size/sudoku.SqrtN)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px;background-color:rgba(255,0,0,0.25);">
-                            </div>
-                            break;
                     }
+                </div>
+            }
+            @foreach(var move in Moves)
+            {
+                <div class="move">
+                    @foreach(var hint in move.Hints)
+                    {
+                        switch (hint)
+                        {
+                            case SudokuCellHint cellHint:
+                                <div class="hint">
+                                <div class="subHint" style="left:@(cellHint.Cell.X*size)px;top:@(cellHint.Cell.Y*size)px;width:@(size)px;height:@(size)px;background-color:rgba(@cellHint.Color.R,@cellHint.Color.G,@cellHint.Color.B,@(cellHint.Color.A/255.0))">
+                                </div>
+                                </div>
+                                break;
+                            case SudokuDomainHint domainHint:
+                                <div class="hint">
+                                    @foreach(var dCell in domainHint.Domain.Cells)
+                                    {
+                                        <div class="subHint" style="left:@(dCell.X*size)px;top:@(dCell.Y*size)px;width:@(size)px;height:@(size)px;background-color:rgba(@domainHint.Color.R,@domainHint.Color.G,@domainHint.Color.B,@(domainHint.Color.A/255.0))">
+                                        </div>
+                                    }
+                                </div>
+                                break;
+                            case SudokuCellOptionHint cellOptionHint:
+                                {
+                                    var cell = cellOptionHint.Cell;
+                                    var n = cellOptionHint.Option;
+                                    <div class="hint">
+                                    <div class="subHint" style="left:@(cell.X*size+(n%sudoku.SqrtN)*size/sudoku.SqrtN)px;top:@(cell.Y*size+(n/sudoku.SqrtN)*size/sudoku.SqrtN)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px;background-color:rgba(@cellOptionHint.Color.R,@cellOptionHint.Color.G,@cellOptionHint.Color.B,@(cellOptionHint.Color.A/255.0));">
+                                    </div>
+                                    </div>
+                                }
+                                break;
+                            case SudokuLinkHint linkHint:
+                                {
+                                    var pos = new List<(double x, double y)>();
+                                    <div class="hint">
+
+                                    @foreach(var lh in linkHint.AB)
+                                    {
+                                        var ca = lh.Option.Cell;
+                                        var na = lh.Option.Value;
+                                        var x = ca.X * size + (na % sudoku.SqrtN) * size / sudoku.SqrtN;
+                                        var y = ca.Y * size + (na / sudoku.SqrtN) * size / sudoku.SqrtN;
+                                        pos.Add((x,y));
+                                        var c = lh.Color;
+                                        <div class="subHint" style="left:@(x)px;top:@(y)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px;background-color:rgba(@c.R,@c.G,@c.B,@(c.A/255.0));">
+                                        </div>
+                              
+                                    }
+                                        @{
+                                            var dy = pos[1].y - pos[0].y;
+                                            var dx = pos[1].x - pos[0].x;
+                                            var angle = 180*Math.Atan2(dy,dx)/Math.PI;
+                                            var len = Math.Sqrt(dx * dx + dy * dy);
+                                        }
+                                        <div class="subHint link @(linkHint.Link.Strong?"strong":"")" style="left:@(pos[0].x+0.5*size/sudoku.SqrtN)px;top:@(pos[0].y+0.5*size/sudoku.SqrtN)px;width:@(len)px;transform:rotate(@(angle)deg)">
+                                        </div>
+                          
+                                    </div>
+                                }
+                                break;
+                        }
+                    }
+                    @foreach(var op in move.Operations)
+                    {
+                        <div class="hint">
+                            @switch (op.Action)
+                            {
+                                case SudokuActionType.SetValue:
+                                case SudokuActionType.SetOnlyPossible:
+                                    <div class="subHint action" style="left:@(op.Cell.X*size)px;top:@(op.Cell.Y*size)px;width:@(size)px;height:@(size)px;font-size:@(size*0.66)px;">
+                                        @(op.Value+1)
+                                    </div>
+                                    break;
+                                case SudokuActionType.RemoveOption:
+                                    var n = op.Value;
+                                    <div class="subHint action" style="left:@(op.Cell.X*size+(n%sudoku.SqrtN)*size/sudoku.SqrtN)px;top:@(op.Cell.Y*size+(n/sudoku.SqrtN)*size/sudoku.SqrtN)px;width:@(size/sudoku.SqrtN)px;height:@(size/sudoku.SqrtN)px;font-size:@(size*0.66/sudoku.SqrtN)px;background-color:rgba(255,0,0,0.25);">
+                                    </div>
+                                    break;
+                            }
                  
+                        </div>
+                    }
                 </div>
             }
         </div>
-    }
+    </div>
 </div>
 
 
-<hr />
-<button class="btn btn-primary" @onclick="() => {solveMode = !solveMode;}">Solve:@(solveMode?"On":"Off")</button>
-<button class="btn btn-primary" @onclick="() => {sudoku.SelectOnlies();Step();}">SelectOnlies</button>
-
 @code {
-    //private Sudoku sudoku = Sudoku.Hard9x9();
+    private double size = 100.0;
+    private bool wide = true;
+
     [Parameter]
-    public Sudoku sudoku { get; set; }
+    public Sudoku sudoku { get; set; } = Sudoku.StandardNxN(3);
 
     private bool solveMode = false;
     private int grade = 0;
-    private string gradeDescription;
+    private string gradeDescription="";
 
     private List<string> history = new List<string>();
     private int current = -1;
+    private bool isDoneRendering = false;
 
     private List<SudokuMove> Moves = new List<SudokuMove>();
+
+    private HashSet<SudokuTechnique> AutoTech = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            var lDotNetReference = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("GLOBAL.SetDotnetReference", lDotNetReference);
+            await UpdateSize();
+            isDoneRendering = true;
+            Step();
+        }
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (isDoneRendering)
+        {
+            Step();
+            return UpdateSize();
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task UpdateSize()
+    {
+        var size0 = size;
+        var wide0 = wide;
+        var dims = await JsRuntime.InvokeAsync<WindowDimension>("window.getDimensions",Array.Empty<object>());
+        wide = dims.Width - dims.Height > 300;
+        var min = wide
+            ? Math.Min(dims.Height, dims.Width - 300)
+            : Math.Min(dims.Width, dims.Height - 400);
+        var N = sudoku.N;
+        size = (min -4)/ (double)N;
+        if(size != size0 || wide != wide0)
+            await InvokeAsync(StateHasChanged);
+    }
+
+    private void Auto(SudokuTechnique tech) {
+        if (AutoTech.Any(x => x.GetType() == tech.GetType()))
+            AutoTech.RemoveWhere(x => x.GetType() == tech.GetType());
+        else
+            AutoTech.Add(tech);
+    }
 
     private void Show(SudokuMove move) => Show(new SudokuMove[] { move });
 
@@ -214,7 +265,7 @@
         Step();
     }
 
-    public void Step()
+    public void Step(bool useTech = true)
     {
         var state = sudoku.Serialize();
         if(current < 0 || history[current] != state)
@@ -225,31 +276,44 @@
             current = history.Count - 1;
         }
         Moves.Clear();
+
+        if (AutoTech.Count > 0 && useTech)
+        {
+            sudoku.AdvanceUsing(AutoTech);
+            Step(false);
+        }
     }
 
-    private void Undo()
+    private Task Undo()
     {
         Moves.Clear();
         if(current > 0)
         {
             current--;
             if (current >= 0)
+            {
                 sudoku = Sudoku.Parse(history[current]);
+                return InvokeAsync(StateHasChanged);
+            }
         }else if(current == 0)
         {
             current--;
             sudoku = Sudoku.StandardNxN(3);
+            return InvokeAsync(StateHasChanged);
         }
+        return Task.CompletedTask;
     }
 
-    private void Redo()
+    private Task Redo()
     {
         Moves.Clear();
         if(current < history.Count - 1)
         {
             current++;
             sudoku = Sudoku.Parse(history[current]);
+            return InvokeAsync(StateHasChanged);
         }
+        return Task.CompletedTask;
     }
 
 
@@ -273,6 +337,28 @@
     {
         grade = sudoku.Grade(out gradeDescription);
     }
-   
 
+    [JSInvokable]
+    public Task OnResize()
+    {
+        if (isDoneRendering)
+            return UpdateSize();
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public Task OnKeyPress(KeyboardEventArgs evargs)
+    {
+        if (evargs.Key == "z" && evargs.CtrlKey)
+            return Undo();
+        if (evargs.Key == "y" && evargs.CtrlKey)
+            return Redo();
+        return Task.CompletedTask;
+    }
+
+    public class WindowDimension
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
 }

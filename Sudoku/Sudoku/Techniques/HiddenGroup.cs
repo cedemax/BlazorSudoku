@@ -62,7 +62,7 @@ namespace BlazorSudoku.Techniques
                 10 => "Deca",
                 _ => "Group"
             };
-            name = $"Naked {name}";
+            name = $"Hidden {name}";
             return name;
         }
     }

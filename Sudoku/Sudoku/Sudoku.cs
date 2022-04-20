@@ -137,20 +137,28 @@ namespace BlazorSudoku
 
         public int Grade(out string moveList)
         {
+            var solver = new Solver();
             var sudoku = Clone();
             var hardestMove = 0;
             var moves = new List<SudokuMove>();
-            do
+            var prevMove = "";
+            var maxIters = N * N * N; // removing one option at a time...
+            for (var i = 0; i < maxIters; ++i)  // avoid inf-loop
             {
-                var move = new Solver().GetMove(sudoku);
+                var move = solver.GetMove(sudoku);
                 if (move == null)
                     break;
+
+                var moveName = move.ToString();
+                if (prevMove == moveName)
+                    break;  // break away from inf-loop
+                prevMove = moveName; 
                 move.Perform(sudoku);
                 hardestMove = Math.Max(hardestMove, move.Complexity);
                 moves.Add(move);
-            } while (true);
+            }
 
-            var grade = hardestMove * (2 - Math.Exp(-moves.Sum(x => Math.Sqrt(x.Complexity-1))/10));
+            var grade = hardestMove * (2 - Math.Exp(-moves.Sum(x => Math.Sqrt(Math.Max(1,x.Complexity-1)))/10));
 
             var prev = "";
             var prevs = 0;
@@ -178,19 +186,24 @@ namespace BlazorSudoku
             return (int)Math.Round(grade);
         }
 
-
-        public void SelectOnlies()
+        public void AdvanceUsing(IEnumerable<SudokuTechnique> techs)
         {
-            foreach(var cell in Cells.Where(x => !x.Value.HasValue && x.IsSet))
-                cell.SetValue(cell.PossibleValues.First());
-
-            var isValid = IsValid();
+            var solver = new Solver(techs);
+            var prevMove = "";
+            var maxIters = N * N * N; // removing one option at a time...
+            for(var i = 0;i< maxIters; ++i)  // avoid inf-loop
+            {
+                var move = solver.GetMove(this);
+                if (move == null)
+                    break;
+                var moveName = move.ToString();
+                if (prevMove == moveName)
+                    break;  // break away from inf-loop
+                prevMove = moveName;
+                move.Perform(this);
+            }
         }
 
-
-
-    
-      
         public IEnumerable<SudokuDomain[]> GetNonOverlappingSets(int size,IEnumerable<SudokuDomain> domains = null)
         {
             domains ??= Domains;
@@ -201,29 +214,10 @@ namespace BlazorSudoku
             }
         }
 
-
-
         public Sudoku Clone()
         {
             return Parse(Serialize());
         }
-
-        public static Sudoku Hard9x9()
-        {
-            var sudoku = StandardNxN(3);
-
-            for(var row = 0; row < 9; ++row)
-            {
-                for (var col = 0; col < 9; ++col)
-                {
-                    var cell = sudoku.Cells.First(x => x.X == col && x.Y == row);
-                    if (HardVals[row][col].HasValue)
-                        cell.SetValue(HardVals[row][col]!.Value-1);
-                }
-            }
-            return sudoku;
-        }
-
 
         public static Sudoku StandardNxN(int n = 3)
         {
@@ -241,21 +235,5 @@ namespace BlazorSudoku
             }
             return new Sudoku(cells, domains.ToArray());
         }
-
-
-        public static int?[][] HardVals = 
-            new int?[9][]{
-                new int?[9]{ null,8,4,null,null,null,null,7,null},
-                new int?[9]{ 7,null,null,null,null,null,null,3,null},
-                new int?[9]{ null,null,2,6,null,8,null,null,null},
-                            
-                new int?[9]{ 8,null,null,null,null,null,1,null,null},
-                new int?[9]{ null,null,9,null,5,1,null,null,3},
-                new int?[9]{ null,4,null,null,null,null,2,9,null},
-                            
-                new int?[9]{ null,null,1,null,null,7,9,null,null},
-                new int?[9]{ null,null,null,null,null,4,null,null,null},
-                new int?[9]{ null,null,6,3,2,null,null,null,null},
-            };
     }
 }

@@ -48,6 +48,8 @@ namespace BlazorSudoku
                 }
             }
         }
+
+        public override string ToString() => string.Join(" -> ", Operations);
     }
 
     public class SudokuAction
@@ -64,7 +66,7 @@ namespace BlazorSudoku
             Value = value;
             Description = description;
         }
-
+        public override string ToString() => $"{Action} {Value} on {Cell}";
 
     }
 }

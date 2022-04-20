@@ -4,5 +4,49 @@
 @{
     Layout = "_Layout";
 }
-
+<script type="text/javascript">
+        var GLOBAL = {};
+        GLOBAL.DotNetReference = null;
+        GLOBAL.SetDotnetReference = function (pDotNetReference) {
+            GLOBAL.DotNetReference = pDotNetReference;
+        };
+        window.getDimensions = function () {
+            return {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+        };
+        var timeout = null;
+        window.addEventListener('resize', function (e) {
+            if (timeout)
+                clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                console.log("r");
+                if(GLOBAL.DotNetReference)
+                    GLOBAL.DotNetReference.invokeMethodAsync('OnResize', {});
+            }, 500);
+         
+        });
+        document.addEventListener('keyup', function (e) {
+            console.log("e");
+            if(GLOBAL.DotNetReference)
+                GLOBAL.DotNetReference.invokeMethodAsync('OnKeyPress', serializeEvent(e));
+        });
+        var serializeEvent = function (e) {
+            if (e) {
+                var o = {
+                    key: e.key,
+                    code: e.code,
+                    location: e.location,
+                    repeat: e.repeat,
+                    type: e.type,
+                    ctrlKey: e.ctrlKey,
+                    metaKey: e.metaKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey
+                };
+                return o;
+            }
+        };
+</script>
 <component type="typeof(App)" render-mode="ServerPrerendered" />

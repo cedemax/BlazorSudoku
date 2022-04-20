@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>ClientSideSudoku</title>
-    <base href="/BlazorSudoku/" />
+    <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="ClientSideSudoku.styles.css" rel="stylesheet" />
@@ -24,6 +24,49 @@
     <script src="decode.js"></script>
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script>
+        var GLOBAL = {};
+        GLOBAL.DotNetReference = null;
+        GLOBAL.SetDotnetReference = function (pDotNetReference) {
+            GLOBAL.DotNetReference = pDotNetReference;
+        };
+        window.getDimensions = function () {
+            return {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+        };
+        var timeout = null;
+        window.addEventListener('resize', function (e) {
+            if (timeout)
+                clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                console.log("r");
+                if (GLOBAL.DotNetReference)
+                    GLOBAL.DotNetReference.invokeMethodAsync('OnResize', {});
+            }, 500);
+
+        });
+        document.addEventListener('keyup', function (e) {
+            console.log("e");
+            if (GLOBAL.DotNetReference)
+                GLOBAL.DotNetReference.invokeMethodAsync('OnKeyPress', serializeEvent(e));
+        });
+        var serializeEvent = function (e) {
+            if (e) {
+                var o = {
+                    key: e.key,
+                    code: e.code,
+                    location: e.location,
+                    repeat: e.repeat,
+                    type: e.type,
+                    ctrlKey: e.ctrlKey,
+                    metaKey: e.metaKey,
+                    shiftKey: e.shiftKey,
+                    altKey: e.altKey
+                };
+                return o;
+            }
+        };
         Blazor.start({
             loadBootResource: function (type, name, defaultUri, integrity) {
                 // For framework resources, use the precompressed .br files for faster downloads

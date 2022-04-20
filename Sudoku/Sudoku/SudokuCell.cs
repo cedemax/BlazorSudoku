@@ -20,9 +20,9 @@
 
         public HashSet<SudokuDomain> Domains { get; } = new HashSet<SudokuDomain>();
 
-        public int LeftBorder => Domains.Count - Domains.Count(x => x.Cells.Any(x => x.X == X-1 && x.Y == Y));
+        public int LeftBorder => Domains.Count(x => x.Cells.Any(x => x.X == X - 1 && x.Y == Y )) == 0 ? 2 : 0;
         public int RightBorder => Domains.Count - Domains.Count(x => x.Cells.Any(x => x.X == X+1 && x.Y == Y));
-        public int TopBorder => Domains.Count - Domains.Count(x => x.Cells.Any(x => x.X == X && x.Y == Y-1));
+        public int TopBorder => Domains.Count(x => x.Cells.Any(x => x.X == X && x.Y == Y-1)) == 0?2:0;
         public int BottomBorder => Domains.Count - Domains.Count(x => x.Cells.Any(x => x.X == X && x.Y == Y + 1));
 
         public SudokuCell(int x,int y)

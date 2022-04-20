@@ -1,23 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
-<PageTitle>Index</PageTitle>
-
 <PageTitle>Sudoku</PageTitle>
-
-<h1>Sudoku</h1>
-
-@{
-
-    var size = 100.0;
-    if (!Directory.Exists(sudokuDir))
-        Directory.CreateDirectory(sudokuDir);
-    var savedSudokus = Directory.GetFiles(sudokuDir)
-        .Where(x => x.EndsWith(".sud"))
-        .Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
-}
-
-
-<div class="d-flex">
+<div class="popup d-flex">
     <div class="form-group">
         <input type="text" class="form-control" @bind="@sudoku.Name" placeholder="Sudoku Name" id="name"/>
     </div>
@@ -35,16 +19,25 @@
     <button class="btn btn-danger" @onclick="Delete">Delete</button>
     <button class="btn btn-primary" @onclick="Reload">Reload</button>
 </div>
-<hr />
-
 <BlazorSudoku.SudokuGame sudoku="@sudoku" @ref="game"></BlazorSudoku.SudokuGame>
-
-
 @code{
+
+    private string[] savedSudokus;
+
     private BlazorSudoku.SudokuGame game;
 
     private Sudoku sudoku = Sudoku.StandardNxN(3);
     private string sudokuDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "SavedSudokus");
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (!Directory.Exists(sudokuDir))
+            Directory.CreateDirectory(sudokuDir);
+        savedSudokus = Directory.GetFiles(sudokuDir)
+            .Where(x => x.EndsWith(".sud"))
+            .Select(x => Path.GetFileNameWithoutExtension(x)).ToArray();
+    }
 
     private void Reload()
     {

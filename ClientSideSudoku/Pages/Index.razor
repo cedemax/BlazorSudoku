@@ -1,51 +1,8 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
-<PageTitle>Index</PageTitle>
-
 <PageTitle>Sudoku</PageTitle>
-
-<h1>Sudoku</h1>
-
-@{
-    var size = 100.0;
-}
-
-<hr />
-
 <BlazorSudoku.SudokuGame sudoku="@sudoku" @ref="game"></BlazorSudoku.SudokuGame>
-
-
 @code{
     private BlazorSudoku.SudokuGame game;
-
     private Sudoku sudoku = Sudoku.StandardNxN(3);
-    private string sudokuDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "SavedSudokus");
-
-    private void Reload()
-    {
-        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
-    }
-
-    private void Save()
-    {
-
-        var path = Path.Combine(sudokuDir,$"{sudoku.Name}.sud");
-        File.WriteAllText(path, sudoku.Serialize());
-    }
-    private void Delete()
-    {
-        var path = Path.Combine(sudokuDir,$"{sudoku.Name}.sud");
-        if (File.Exists(path))
-            File.Delete(path);
-    }
-    private void Parse(ChangeEventArgs changeEvent)
-    {
-        var val = (string)changeEvent.Value;
-        var path = Path.Combine(sudokuDir,$"{val}.sud");
-        if (File.Exists(path))
-        {
-            sudoku = Sudoku.Parse(File.ReadAllText(path));
-            game.Step();
-        }
-    }
 }

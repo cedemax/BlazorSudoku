@@ -2,6 +2,8 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 h1:focus {
@@ -63,23 +65,100 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+.popup {
+    position: fixed;
+    background: #fff;
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    border:1px solid #000;
+    overflow: hidden;
+    padding:5px;
+}
+.popup:hover{
+    width:auto;
+    height:auto;
+}
 
+.sContainer{
 
+}
+
+.sContainer.wide{
+    display:flex;
+}
+.sContainer.thin {
+}
+.sHeader {
+    padding: 5px;
+    padding-top: 50px;
+}
+.sHeader.wide {
+    flex: 0 0 auto;
+    width: 400px;
+    height: 100vh;
+}
+.sHeader.thin{
+
+}
+.sInner {
+    display:flex;
+    width:100%;
+}
+
+.sInner.wide {
+    flex: 1 1 auto;
+    height:100vh;
+}
+
+.sInner.thin {
+}
+
+.wide .techButtons{
+    width:100%;
+}
+.wide .techButtons .techButton {
+    width: 100%;
+}
+.thin .techButtons {
+    display:flex;
+    flex-wrap:wrap;
+}
+.thin .techButton{
+    width:50%;
+}
+.thin .techButton > .btn {
+    font-size: 14px;
+    padding: .175rem .75rem;
+}
+@media screen and (max-width: 600px) {
+    .thin .techButton {
+        width: 33%;
+    }
+    .thin .techButton > .btn {
+        font-size: 10px;
+        padding: .175rem .25rem;
+    }
+}
 .sudoku{
     position:relative;
-    margin:10px;
+    margin:auto;
 }
 
 .sudoku.done {
     background: rgba(50,200,50,0.25);
 }
-.sudoku > .cell{
-    border:1px solid #000;
-    position:absolute;
+.sudoku > .cell {
+    border: 1px solid #000;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    position: absolute;
 }
 
 .sudoku > .cell > .cellValue {
     text-align:center;
+    box-sizing:border-box;
 }
 
 .sudoku > .cell:hover {
@@ -89,6 +168,7 @@ a, .btn-link {
 .sudoku > .cell > .cellOptions{
     position:relative;
     height:100%;
+    box-sizing:border-box;
 }
 
 .sudoku > .cell > .cellOptions.bad {

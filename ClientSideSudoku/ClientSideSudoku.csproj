@@ -26,8 +26,8 @@
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;C:\Users\cedem\Documents\Repos\BlazorSudoku\BlazorSudoku\wwwroot\css\site.css*&quot; &quot;C:\Users\cedem\Documents\Repos\BlazorSudoku\ClientSideSudoku\wwwroot\css\site.css*&quot; /Y" />
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="xcopy &quot;$(SolutionDir)BlazorSudoku\wwwroot\css\site.css*&quot; &quot;$(SolutionDir)ClientSideSudoku\wwwroot\css\site.css*&quot; /Y" />
   </Target>
 
 </Project>

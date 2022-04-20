@@ -5,9 +5,14 @@ VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorSudoku", "BlazorSudoku\BlazorSudoku.csproj", "{5C8C2A47-C324-41DB-ADAA-4CD1EF7998E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku", "Sudoku\Sudoku.csproj", "{A2ED7D13-5792-4860-B48B-E97BEC281B8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sudoku", "Sudoku\Sudoku.csproj", "{A2ED7D13-5792-4860-B48B-E97BEC281B8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientSideSudoku", "ClientSideSudoku\ClientSideSudoku.csproj", "{23A2CCC9-4CD6-4E96-98D5-A053AB928C51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientSideSudoku", "ClientSideSudoku\ClientSideSudoku.csproj", "{23A2CCC9-4CD6-4E96-98D5-A053AB928C51}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5796D61A-F975-424F-A4BF-E08A42561D1A}"
+	ProjectSection(SolutionItems) = preProject
+		index.html = index.html
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

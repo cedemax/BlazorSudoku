@@ -26,8 +26,8 @@
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Debug xcopy &quot;$(SolutionDir)BlazorSudoku\wwwroot\css\site.css*&quot; &quot;$(SolutionDir)ClientSideSudoku\wwwroot\css\site.css*&quot; /Y" />
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Command="xcopy &quot;$(SolutionDir)BlazorSudoku\wwwroot\css\site.css*&quot; &quot;$(SolutionDir)ClientSideSudoku\wwwroot\css\site.css*&quot; /Y" />
   </Target>
 
 </Project>

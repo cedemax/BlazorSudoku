@@ -24,5 +24,6 @@ jobs:
       with:
         jekyll: false
         build_dir: release/wwwroot
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

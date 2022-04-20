@@ -1,0 +1,27 @@
+name: .NET
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Publish .NET Core Project
+      run: dotnet publish ClientSideSudoku.csproj -c Release -o release --nologo
+    - name: Commit wwwroot to GitHub Pages
+      uses: crazy-max/ghaction-github-pages@v2.6.0
+      with:
+        jekyll: false
+        build_dir: release/wwwroot
+

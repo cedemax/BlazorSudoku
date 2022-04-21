@@ -7,8 +7,14 @@ namespace BlazorSudoku
         public string Name { get; set; }
 
         public SudokuCell[] Cells { get; }
+        public HashSet<SudokuCell> UnsetCells { get; }
 
         public SudokuDomain[] Domains { get; }
+
+        public HashSet<SudokuDomain> UnsetDomains { get; }
+
+        public Dictionary<(SudokuDomain A,SudokuDomain B),HashSet<SudokuCell>> DomainIntersections { get; }
+        public Dictionary<(SudokuDomain A,SudokuDomain B), HashSet<SudokuCell>> DomainExceptions { get; }
 
         public int N { get; }
         public int SqrtN { get; }
@@ -16,8 +22,6 @@ namespace BlazorSudoku
 
         public string PID => string.Join(";", Cells.Select(x => x.PID));
 
-
-        public IEnumerable<SudokuCell> UnsetCells => Cells.Where(x => x.IsUnset);
 
         public string Serialize()
         {
@@ -51,9 +55,9 @@ namespace BlazorSudoku
                         var vals = line.Split(' ').Last().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
                         var cell = new SudokuCell(vals[0], vals[1]);
                         if (vals.Length >= 3 && vals[2] >= 0)
-                            cell.SetValue(vals[2]);
+                            cell.SetValue(vals[2],true);
                         if(vals.Length >= 4 && !cell.Value.HasValue)
-                            cell.SetOptions(vals.Skip(3));
+                            cell.SetOptions(vals.Skip(3),true);
                         cells.Add(cell);
                         break;
                     case "domain":
@@ -89,10 +93,43 @@ namespace BlazorSudoku
             Domains = domains;
             foreach (var cell in Cells)
                 if(!cell.Value.HasValue && cell.PossibleValues.Count == 0)
-                        cell.SetOptions(Enumerable.Range(0,N));
+                        cell.SetOptions(Enumerable.Range(0,N),true);
             foreach (var domain in Domains)
                 foreach (var cell in domain.Cells)
                     cell.Domains.Add(domain);
+
+            UnsetCells = Cells.Where(x => x.IsUnset).ToHashSet();
+            UnsetDomains = Domains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
+
+            foreach (var cell in Cells)
+                cell.Init();
+            foreach (var domain in Domains)
+                domain.Init();
+
+            DomainIntersections = new ();
+            DomainExceptions = new ();
+            foreach (var domainA in Domains)
+            {
+                foreach(var domainB in domainA.IntersectingDomains)
+                {
+                    if (domainA == domainB)
+                        continue;
+                    var keyA = (domainA, domainB);
+                    if (!DomainIntersections.TryGetValue(keyA, out var intersection))
+                    {
+                        var keyB = (domainB, domainA);
+                        intersection = domainA.Cells.Intersect(domainB.Cells).ToHashSet();
+                        DomainIntersections[keyA] = intersection;
+                        DomainIntersections[keyB] = intersection;
+                    }
+                    DomainExceptions[keyA] = domainA.Cells.Except(domainB.Cells).ToHashSet();
+                }
+            }
+
+            foreach (var cell in Cells)
+                cell.CellBecameSet += (sender, args) => { UnsetCells.Remove(args.Cell); };
+            foreach (var domain in Domains)
+                domain.DomainBecameSet += (sender, args) => { UnsetDomains.Remove(args.Domain); };
         }
 
 
@@ -137,7 +174,7 @@ namespace BlazorSudoku
 
         public int Grade(out string moveList)
         {
-            var solver = new Solver();
+            var solver = new Solver(SudokuTechnique.GetAllTechiques().Where(x => x is not Solver && x is not SelectOnlies).OrderBy(x => x.MinComplexity).ToList());
             var sudoku = Clone();
             var hardestMove = 0;
             var moves = new List<SudokuMove>();
@@ -204,15 +241,17 @@ namespace BlazorSudoku
             }
         }
 
-        public IEnumerable<SudokuDomain[]> GetNonOverlappingSets(int size,IEnumerable<SudokuDomain> domains = null)
+        public IEnumerable<SudokuDomain[]> GetNonOverlappingSets(int size,IEnumerable<SudokuDomain>? domains = null)
         {
-            domains ??= Domains;
+            domains ??= Domains.Where(x => x.Unset.Any());
+
             foreach(var group in domains.GetCombinations(size))
             {
                 if(SudokuDomain.NonOverlapping(group))
                     yield return group;
             }
         }
+
 
         public Sudoku Clone()
         {

@@ -5,25 +5,23 @@ namespace BlazorSudoku.Techniques
     public class HiddenGroup : SudokuTechnique
     {
         public override int MinComplexity => 8;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
             for (var n = 2; n < 5; ++n)
             {
-                foreach (var domain in sudoku.Domains)
+                if (GetComplexity(n) < MinComplexity)
+                    return moves;
+
+                foreach (var domain in sudoku.UnsetDomains)
                 {
-                    var unset = domain.Unset;
-                    if (unset.Count <= n)  // no gains
+                    if (domain.Unset.Count <= n)  // no gains
                         continue;
 
-                    foreach (var group in unset.GetCombinations(n))
+                    foreach (var group in domain.Unset.GetCombinations(n))
                     {
-#if DEBUG
-                        if (group.ToHashSet().Count != n)
-                            throw new Exception();
-#endif  
-                        var move = new SudokuMove(GetName(n), 2 * n*n);
+                        var move = new SudokuMove(GetName(n), GetComplexity(n));
                         var hasAny = domain.Cells.Where(x => x.PossibleValues.Intersect(group).Any()).ToArray();
                         if (hasAny.Length == n)  // found a group
                             foreach (var cell in hasAny)
@@ -45,7 +43,7 @@ namespace BlazorSudoku.Techniques
             return moves;
         }
 
-
+        private int GetComplexity(int n) => 2 * n * n;
 
         private string GetName(int n)
         {

@@ -5,31 +5,37 @@ namespace BlazorSudoku.Techniques
     public class NakedGroup : SudokuTechnique
     {
         public override int MinComplexity => 4;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
             for (var n = 2; n < 5; ++n)
             {
-               
+                if (GetComplexity(n) < MinComplexity)
+                    return moves;
 
-                foreach (var domain in sudoku.Domains)
+                foreach (var domain in sudoku.UnsetDomains)
                 {
-                    var groups = domain.Cells.Where(x => x.PossibleValues.Count == n).ToArray();
-                    var groupGroups = groups.GroupBy(x => x.PID).Where(x => x.Count() == n).ToArray();
+                    if (domain.Unset.Count < n)
+                        continue;
+
+                    var groups = domain.UnsetCells.Where(x => x.PossibleValues.Count == n).ToArray();
+                    if (groups.Length == 0)
+                        continue;
+
+                    var groupGroups = groups.GroupBy(x => x.PID).Select(x => x.ToArray()).ToArray().Where(x => x.Length == n).ToArray();
                     foreach (var groupGroup in groupGroups)
                     {
-                        var cells = groupGroup.ToHashSet();
-                        var vals = cells.First().PossibleValues;
-                        var move = new SudokuMove(GetName(n),n*n);
-                        foreach (var cell in domain.Cells.Except(cells))
+                        var vals = groupGroup[0].PossibleValues;
+                        var move = new SudokuMove(GetName(n), GetComplexity(n));
+                        foreach (var cell in domain.UnsetCells.Except(groupGroup))
                             if (cell.IsUnset)
                                 foreach(var val in cell.PossibleValues.Intersect(vals))
                                     move.Operations.Add(new SudokuAction(cell, SudokuActionType.RemoveOption, val, "Locked into naked group"));
 
                         if (!move.IsEmpty)
                         {
-                            foreach (var groupCell in cells)
+                            foreach (var groupCell in groupGroup)
                                 move.Hints.Add(new SudokuCellHint(groupCell, SudokuHint.Direct));
                             moves.Add(move);
                             if (moves.Count >= limit)
@@ -41,7 +47,7 @@ namespace BlazorSudoku.Techniques
             return moves;
         }
 
-        
+        private int GetComplexity(int n) => n * n;
 
         private string GetName(int n)
         {

@@ -5,18 +5,20 @@ namespace BlazorSudoku.Techniques
     public class DomainForcing : SudokuTechnique
     {
         public override int MinComplexity => 5;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            foreach (var domainA in sudoku.Domains)
+            foreach (var domainA in sudoku.UnsetDomains)
             {
-                var intersectingDomains = domainA.Cells.SelectMany(x => x.Domains.Where(y => y != domainA)).ToHashSet();
-                foreach (var domainB in intersectingDomains)
+                foreach (var domainB in domainA.IntersectingUnsetDomains)
                 {
-                    var cellsAB = domainA.Cells.Intersect(domainB.Cells).ToHashSet();
-                    var cellsAnotB = domainA.Cells.Except(domainB.Cells).ToHashSet();
-                    var cellsBnotA = domainB.Cells.Except(domainA.Cells).ToHashSet();
+                    var cellsAB = sudoku.DomainIntersections[(domainA,domainB)];
+                    var cellsAnotB = sudoku.DomainExceptions[(domainA, domainB)];
+                    var cellsBnotA = sudoku.DomainExceptions[(domainB, domainA)];
 
                     if (cellsAB.Count >= 1 && cellsAnotB.Count >= 1 && cellsBnotA.Count >= 1)
                     {
@@ -32,9 +34,9 @@ namespace BlazorSudoku.Techniques
                             // value is exclusive to AB
                             if (!valuesAnotB.Contains(value))
                             {
-                                foreach (var cell in cellsBnotA.Where(x => x.IsUnset))
+                                foreach (var cell in cellsBnotA)
                                 {
-                                    if (done.Contains((cell, value)) || !cell.PossibleValues.Contains(value))
+                                    if (cell.IsSet || done.Contains((cell, value)) || !cell.PossibleValues.Contains(value))
                                         continue;
                                     move.Operations.Add(new SudokuAction(cell, SudokuActionType.RemoveOption, value, $"must be in the intersection of domains {domainA} and {domainB}"));
                                     done.Add((cell, value));
@@ -45,7 +47,7 @@ namespace BlazorSudoku.Techniques
                             {
                                 foreach (var cell in cellsAnotB)
                                 {
-                                    if (done.Contains((cell, value)) || !cell.PossibleValues.Contains(value))
+                                    if (cell.IsSet || done.Contains((cell, value)) || !cell.PossibleValues.Contains(value))
                                         continue;
                                     move.Operations.Add(new SudokuAction(cell, SudokuActionType.RemoveOption, value, $"must be in the intersection of domains {domainA} and {domainB}"));
                                     done.Add((cell, value));

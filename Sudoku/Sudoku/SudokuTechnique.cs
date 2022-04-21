@@ -11,7 +11,7 @@ namespace BlazorSudoku
             return GetMoves(sudoku, 1).FirstOrDefault();
         }
 
-        public abstract List<SudokuMove> GetMoves(Sudoku sudoku,int limit = int.MaxValue);
+        public abstract List<SudokuMove> GetMoves(Sudoku sudoku,int limit = int.MaxValue, int complexityLimit = int.MaxValue);
 
         public SudokuMove? TrySetValue(Sudoku sudoku)
         {

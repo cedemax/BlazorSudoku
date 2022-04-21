@@ -5,16 +5,19 @@ namespace BlazorSudoku.Techniques
     public class XYZWing : SudokuTechnique
     {
         public override int MinComplexity => 15;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            foreach (var cell1 in sudoku.Cells.Where(x => x.PossibleValues.Count == 3))
+            foreach (var cell1 in sudoku.UnsetCells.Where(x => x.PossibleValues.Count == 3))
             {
                 var xyz = cell1.PossibleValues;
                 foreach (var domain in cell1.Domains)
                 {
-                    foreach (var cell2 in domain.Cells.Where(x => x != cell1 && x.PossibleValues.Count == 2))
+                    foreach (var cell2 in domain.UnsetCells.Where(x => x != cell1 && x.PossibleValues.Count == 2))
                     {
                         var yz = xyz.Intersect(cell2.PossibleValues).ToArray();
                         if (yz.Length == 2)
@@ -23,7 +26,7 @@ namespace BlazorSudoku.Techniques
                             // check the other domains
                             foreach (var domain2 in cell1.Domains.Where(x => x != domain))
                             {
-                                var cell3 = domain2.Cells.FirstOrDefault(x =>
+                                var cell3 = domain2.UnsetCells.FirstOrDefault(x =>
                                         x != cell1 &&
                                         !x.Domains.Contains(domain) &&
                                         x.PossibleValues.Count == 2 &&
@@ -44,8 +47,8 @@ namespace BlazorSudoku.Techniques
                                             x != cell3 &&
                                             x != cell1 &&
                                             x.PossibleValues.Contains(z) &&
-                                            x.Domains.Any(x => x.Cells.Contains(cell2)) &&
-                                            x.Domains.Any(x => x.Cells.Contains(cell1))))
+                                            x.Domains.Any(x => x.UnsetCells.Contains(cell2)) &&
+                                            x.Domains.Any(x => x.UnsetCells.Contains(cell1))))
                                     {
                                         move.Operations.Add(new SudokuAction(cell4, SudokuActionType.RemoveOption, z, "Removed by XYZ-wing"));
                                     }

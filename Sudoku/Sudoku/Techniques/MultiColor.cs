@@ -4,14 +4,17 @@ namespace BlazorSudoku.Techniques
     public class MultiColor : SudokuTechnique
     {
         public override int MinComplexity => 32;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var moves = new List<SudokuMove>();
 
             for (var n = 0; n < sudoku.N; ++n)
             {
                 var done = new HashSet<(SudokuCell cell, int n)>();
-                var starts = sudoku.Cells.Where(x => x.ConjugatePairs(n).Any());
+                var starts = sudoku.UnsetCells.Where(x => x.ConjugatePairs(n).Any());
                 var color = 1;
                 var coloring = new Dictionary<SudokuCell, int>();
                 foreach (var start in starts)
@@ -33,6 +36,9 @@ namespace BlazorSudoku.Techniques
                     var colorB = colorPair[1];
 
                     var move = new SudokuMove($"Dual Color on {n + 1}", colorPair.Length* coloring.Count * 4);
+                    // too complex
+                    if (move.Complexity > complexityLimit)
+                        continue;
 
                     var coloringA = coloring.Where(x => Math.Abs(x.Value) == colorA).ToDictionary(x => x.Key, x => x.Value);
                     var coloringB = coloring.Where(x => Math.Abs(x.Value) == colorB).ToDictionary(x => x.Key, x => x.Value);

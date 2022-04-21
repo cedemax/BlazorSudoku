@@ -12,7 +12,7 @@
         }
 
         public override int MinComplexity => 10000;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue,int complexityLimit = int.MaxValue)
         {
             var ret = new List<SudokuMove>();
             if (techs.Count == 0)
@@ -23,9 +23,13 @@
                 var remainingSpace = ret.Where(x => x.Complexity > solver.MinComplexity).Count();
                 if (limit - remainingSpace == 0)
                     continue;
+                // update complexity limit
+                if (ret.Count > limit)
+                    complexityLimit = ret.Take(limit).Max(x => x.Complexity);
 
-                var moves = solver.GetMoves(sudoku, limit - remainingSpace);
+                var moves = solver.GetMoves(sudoku, limit - remainingSpace, complexityLimit);
                 ret.AddRange(moves);
+                ret.Sort((a,b) => a.Complexity-b.Complexity);
             }
             return ret.OrderBy(x => x.Complexity).Take(limit).ToList();
         }

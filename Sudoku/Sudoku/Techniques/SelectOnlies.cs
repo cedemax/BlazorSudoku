@@ -5,7 +5,7 @@ namespace BlazorSudoku.Techniques
     public class SelectOnlies : SudokuTechnique
     {
         public override int MinComplexity => 0;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var move = new SudokuMove("Mark Cells",0);

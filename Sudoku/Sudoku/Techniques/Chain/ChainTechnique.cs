@@ -10,8 +10,14 @@ namespace BlazorSudoku.Techniques.Chain
 
         protected abstract SudokuMove? EvaluateChain(SudokuChainNode node, HashSet<(SudokuCell cell, int n)> done, Sudoku sudoku,out bool terminateChain);
 
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        protected abstract int GetComplexity(SudokuChainNode node);
+
+
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue,int complexityLimit = int.MaxValue)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
 
@@ -29,6 +35,10 @@ namespace BlazorSudoku.Techniques.Chain
                         var newNodes2 = Propagate(node).ToArray();
                         foreach (var newNode in newNodes2)
                         {
+                            // too complex for this run
+                            if (complexityLimit < int.MaxValue && GetComplexity(newNode) > complexityLimit)
+                                continue;
+
                             var move = EvaluateChain(newNode, done, sudoku,out bool terminateChain);
 
                             if (move != null && !move.IsEmpty)

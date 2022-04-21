@@ -53,13 +53,14 @@
             }
         }
 
-        protected override SudokuMove? EvaluateChain(SudokuChainNode node, HashSet<(SudokuCell cell, int n)> done, Sudoku sudoku,out bool terminateChain)
+        protected override SudokuMove? EvaluateChain(SudokuChainNode node, HashSet<(SudokuCell cell, int n)> done, Sudoku sudoku, out bool terminateChain)
         {
             var len = node.Length;
             terminateChain = false;
             // a chain
             if (len < 3)
                 return null;   // too short
+
             var start = node.First;
             var last = node.Last;
 
@@ -93,7 +94,7 @@
                 var name = contradiction.A.Equals(node.First)
                     ? "Discontinuous Nice Loop"
                     : "Contradiction Chain";
-                var move = new SudokuMove(name, (int)Math.Round(Math.Pow(len, 1.5) * 8));
+                var move = new SudokuMove(name, GetComplexity(len));
 
                 move.Operations.Add(new SudokuAction(node.Link.B.Cell, SudokuActionType.RemoveOption, start.Value, "Removed by contradiction"));
                 done.Add((node.Link.B.Cell, node.Link.B.Value));
@@ -125,10 +126,6 @@
                 }
                 return move;
             }
-
-
-
-            return null;    // not contradictory
         }
 
         protected override IEnumerable<SudokuChainNode> Propagate(SudokuChainNode node)
@@ -168,5 +165,7 @@
                 }
             }
         }
+        protected override int GetComplexity(SudokuChainNode node) => GetComplexity(node.Length);
+        private int GetComplexity(int len) => (int)Math.Round(Math.Pow(len, 1.5) * 8);
     }
 }

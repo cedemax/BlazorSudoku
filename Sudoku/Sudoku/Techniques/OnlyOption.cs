@@ -5,11 +5,14 @@ namespace BlazorSudoku.Techniques
     public class OnlyOption : SudokuTechnique
     {
         public override int MinComplexity => 8;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            foreach (var domain in sudoku.Domains)
+            foreach (var domain in sudoku.UnsetDomains)
             {
                 foreach (var cell in domain.UnsetCells)
                 {

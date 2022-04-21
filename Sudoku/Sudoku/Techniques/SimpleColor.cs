@@ -4,11 +4,14 @@ namespace BlazorSudoku.Techniques
     public class SimpleColor : SudokuTechnique
     {
         public override int MinComplexity => 8;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            var starts = sudoku.Cells.Where(x => x.ConjugatePairs().Any()).GroupBy(x => x.PID).Select(x => x.First()).ToArray();
+            var starts = sudoku.UnsetCells.Where(x => x.ConjugatePairs().Any()).GroupBy(x => x.PID).Select(x => x.First()).ToArray();
             foreach (var start in starts)
             {
                 foreach (var value in start.PossibleValues)
@@ -16,15 +19,20 @@ namespace BlazorSudoku.Techniques
                     var coloring = new Dictionary<SudokuCell, bool>();
                     ColorBi(start, value, coloring);
 
+
+
                     foreach (var c in coloring.Keys)
                         if (!c.PossibleValues.Contains(value))
                             throw new Exception();
 
                     var move = new SudokuMove($"Single Color on {value+1}",coloring.Count*4);
 
-                    foreach (var cell in sudoku.Cells)
+                    if (move.Complexity > complexityLimit)
+                        continue;
+
+                    foreach (var cell in sudoku.UnsetCells)
                     {
-                        if (cell.IsUnset && cell.PossibleValues.Contains(value))
+                        if (cell.PossibleValues.Contains(value))
                         {
                             if (coloring.ContainsKey(cell))
                             {

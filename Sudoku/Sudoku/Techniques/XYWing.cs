@@ -5,15 +5,18 @@ namespace BlazorSudoku.Techniques
     public class XYWing : SudokuTechnique
     {
         public override int MinComplexity => 10;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
+            if (complexityLimit < MinComplexity)
+                return new();
+
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            foreach (var cell1 in sudoku.Cells.Where(x => x.PossibleValues.Count == 2))
+            foreach (var cell1 in sudoku.UnsetCells.Where(x => x.PossibleValues.Count == 2))
             {
                 foreach (var domain in cell1.Domains)
                 {
-                    foreach (var cell2 in domain.Cells.Where(x => x != cell1 && x.PossibleValues.Count == 2))
+                    foreach (var cell2 in domain.UnsetCells.Where(x => x != cell1 && x.PossibleValues.Count == 2))
                     {
                         var vAs = cell1.PossibleValues.Intersect(cell2.PossibleValues).ToArray();
                         if (vAs.Length == 1)

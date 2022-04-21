@@ -8,7 +8,7 @@ namespace BlazorSudoku.Techniques
 
         protected override IEnumerable<SudokuChainNode> Starts(Sudoku sudoku)
         {
-            foreach(var start in sudoku.Cells.Where(x => x.PossibleValues.Count == 2))
+            foreach(var start in sudoku.UnsetCells.Where(x => x.PossibleValues.Count == 2))
             {
                 var options = start.PossibleValues.Select(x => new SudokuCellOption(start, x)).ToArray();
                 foreach (var value in start.PossibleValues)
@@ -34,14 +34,13 @@ namespace BlazorSudoku.Techniques
             var chainEnd = node.Last;
             if (chainStart.Value != chainEnd.Value)
                 return null;   // requirement for XY-chain
-            var eliminate = sudoku.Cells
+            var eliminate = sudoku.UnsetCells
                 .Where(x =>
-                x.IsUnset &&
                 x.PossibleValues.Contains(chainStart.Value) &&
                 x.Sees(chainStart.Cell) &&
                 x.Sees(chainEnd.Cell) && !node.NodesReversed().Any(y => y.A.Cell == x || y.B.Cell == x))
                 .ToArray();
-            var move = new SudokuMove($"XY-chain on {chainStart.Value + 1}", (int)Math.Round(Math.Pow(len, 1.5) * 4));
+            var move = new SudokuMove($"XY-chain on {chainStart.Value + 1}", GetComplexity(len));
 
             foreach (var elimCell in eliminate)
             {
@@ -81,5 +80,8 @@ namespace BlazorSudoku.Techniques
             }
         }
 
+        protected override int GetComplexity(SudokuChainNode node) => GetComplexity(node.Length);
+
+        private int GetComplexity(int len) => (int)Math.Round(Math.Pow(len, 1.5) * 4);
     }
 }

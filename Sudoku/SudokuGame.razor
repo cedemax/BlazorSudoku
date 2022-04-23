@@ -5,7 +5,7 @@
 @inject IJSRuntime JsRuntime
 
 <PageTitle>Sudoku</PageTitle>
-<div class="sContainer @(wide?"wide":"thin")">
+<div class="sContainer @(wide?"wide":"thin")" data-chars="@string.Join("",sudoku.Characters)" id="sudokuGame">
     <div class="sHeader @(wide?"wide":"thin")">
         <div class="d-flex">
             <div class="w-100">
@@ -206,6 +206,8 @@
             await UpdateSize();
             isDoneRendering = true;
             Step();
+
+            ParseOCRResult(System.Text.Json.JsonSerializer.Deserialize<OCRResult>("{\"Result\":[{\"Value\":\"5\",\"X\":3.8475,\"Y\":1.695},{\"Value\":\"2\",\"X\":5.82,\"Y\":1.7775},{\"Value\":\"6\",\"X\":1.77,\"Y\":2.5125},{\"Value\":\"2\",\"X\":3.8175,\"Y\":2.595},{\"Value\":\"9\",\"X\":5.145,\"Y\":2.6475},{\"Value\":\"3\",\"X\":3.12,\"Y\":3.4575},{\"Value\":\"7\",\"X\":6.48,\"Y\":3.54},{\"Value\":\"9\",\"X\":2.4225,\"Y\":4.3275},{\"Value\":\"6\",\"X\":3.0975,\"Y\":4.3575},{\"Value\":\"8\",\"X\":5.8125,\"Y\":4.4175},{\"Value\":\"2\",\"X\":6.48,\"Y\":4.425},{\"Value\":\"3\",\"X\":3.7575,\"Y\":6.195},{\"Value\":\"2\",\"X\":5.1075,\"Y\":6.21},{\"Value\":\"5\",\"X\":3.015,\"Y\":7.11},{\"Value\":\"1\",\"X\":5.0775,\"Y\":7.14},{\"Value\":\"9\",\"X\":5.8125,\"Y\":7.1475},{\"Value\":\"1\",\"X\":1.5375,\"Y\":8.04},{\"Value\":\"8\",\"X\":2.9775,\"Y\":8.0625},{\"Value\":\"9\",\"X\":4.4025,\"Y\":8.0775},{\"Value\":\"1\",\"X\":8.8425,\"Y\":7.965}]}"));
         }
     }
 
@@ -356,9 +358,25 @@
         return Task.CompletedTask;
     }
 
+    [JSInvokable]
+    public Task SetOCRResult(OCRResult res)
+    {
+        ParseOCRResult(res);
+        return Task.CompletedTask;
+    }
+
+    public void ParseOCRResult(OCRResult? res)
+    {
+        if (res == null)
+            return;
+        sudoku.ParseOCRResult(res);
+    }
+
+
     public class WindowDimension
     {
         public int Width { get; set; }
         public int Height { get; set; }
     }
+   
 }

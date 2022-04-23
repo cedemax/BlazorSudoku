@@ -1,7 +1,18 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
 <PageTitle>Sudoku</PageTitle>
+
+<div class="popup d-flex">
+    <button class="btn btn-primary" onclick="startCamera();">Camera</button>
+    <button class="btn btn-danger" onclick="takePhoto();">TryParse</button>
+</div>
+<video id="video" width="600" height="600" autoplay style="left:-10000px;"></video>
+<canvas id="canvas" width="600" height="600" style="left:-10000px;"></canvas>
+
 <BlazorSudoku.SudokuGame sudoku="@sudoku" @ref="game"></BlazorSudoku.SudokuGame>
+
+
+
 @code{
     private BlazorSudoku.SudokuGame game;
     private Sudoku sudoku = Sudoku.StandardNxN(3);

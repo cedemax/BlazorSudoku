@@ -19,6 +19,8 @@ namespace BlazorSudoku
         public int N { get; }
         public int SqrtN { get; }
 
+        public string[] Characters => Enumerable.Range(0, N).Select(x => (x+1).ToString("X")).ToArray();
+
 
         public string PID => string.Join(";", Cells.Select(x => x.PID));
 
@@ -257,6 +259,12 @@ namespace BlazorSudoku
         {
             return Parse(Serialize());
         }
+
+        public Sudoku ParseOCRResult(OCRResult res)
+        {
+            return null;
+        }
+
 
         public static Sudoku StandardNxN(int n = 3)
         {

@@ -1,7 +1,9 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
 <PageTitle>Sudoku</PageTitle>
-<div class="popup d-flex">
+<div class="popup">
+    <div class="d-flex">
+
     <div class="form-group">
         <input type="text" class="form-control" @bind="@sudoku.Name" placeholder="Sudoku Name" id="name"/>
     </div>
@@ -18,7 +20,16 @@
     <button class="btn btn-primary" @onclick="Save">Save</button>
     <button class="btn btn-danger" @onclick="Delete">Delete</button>
     <button class="btn btn-primary" @onclick="Reload">Reload</button>
+    </div>
+    <hr />
+    <div class="d-flex">
+        <button class="btn btn-primary" onclick="startCamera();">Camera</button>
+        <button class="btn btn-danger" onclick="takePhoto();">TryParse</button>
+    </div>
 </div>
+
+<video id="video" width="600" height="600" autoplay style="left:-10000px;"></video>
+<canvas id="canvas" width="600" height="600" style="left:-10000px;"></canvas>
 <BlazorSudoku.SudokuGame sudoku="@sudoku" @ref="game"></BlazorSudoku.SudokuGame>
 @code{
 

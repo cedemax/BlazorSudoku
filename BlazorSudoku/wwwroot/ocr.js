@@ -1,85 +1,56 @@
 ﻿
-setTimeout(init, 100);
+
+async function recognize(i) {
+    const chars = document.querySelector("#sudokuGame").getAttribute("data-chars");
+    const video = document.querySelector("#video");
+    const k = video.width / chars.length;
+    let res = "";
+    const canvas = document.querySelector("#canvas");
+    const ctx = canvas.getContext('2d');
+    const canvas2 = document.querySelector("#canvas2");
+    const ctx2 = canvas2.getContext('2d');
 
 
+    for (var y = 0; y < chars.length; ++y) {
+        for (var x = 0; x < chars.length; ++x) {
 
+            var x0 = x * k - 0.15*k;
+            var x1 = (x + 1) * k + 0.15 * k;
+            var y0 = y * k - 0.15 * k;
+            var y1 = (y + 1) * k + 0.15 * k;
 
-function init() {
-    if (Tesseract) {
+            const image = ctx.getImageData(x0, y0, x1 - x0, y1 - y0);
+            ctx2.putImageData(image, 0, 0);
 
+            console.log("processing:" + x0 + "-" + x1 + " " + y0 + "-" + y1);
 
+            let texts = OCRAD(ctx2, {
+                filters: ["numbers_only"]
+            })
+            console.log(texts);
 
-
-
-
-    } else {
-        setTimeout(init, 100);
-    }
-}
-
-let image_data_url = "";
-
-async function recognize() {
-    if (image_data_url == "")
-        console.error("No image");
-    var chars = document.querySelector("#sudokuGame").getAttribute("data-chars");
-    const worker = Tesseract.createWorker({
-        logger: m => console.log(m)
-    });
-
-    (async () => {
-        await worker.load();
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng', Tesseract.OEM.TESSERACT_ONLY);
-        await worker.setParameters({
-            tessedit_char_whitelist: chars,
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_CHAR,
-            tessjs_create_box: '1',
-        })
-        var video = document.querySelector("#video");
-        var k = video.width / chars.length;
-        //console.log(k);
-        var res = "";
-        for (var y = 0; y < chars.length; ++y) {
-            for (var x = 0; x < chars.length; ++x) {
-
-                var x0 = x * k - 0.25*k;
-                var x1 = (x + 1) * k + 0.25 * k;
-                var y0 = y * k - 0.25 * k;
-                var y1 = (y + 1) * k + 0.25 * k;
-
-                const data = await worker.recognize(image_data_url, {
-                    rectangle: { top: y0, left: x0, width: x1-x0,height:y1-y0}
-                });
-                //console.log(x+" , "+y+" = "+data.data.text);
-                //console.log(data);
-
-                if (data.data.symbols.length) {
-                    var sym = data.data.symbols[0].text;
-                    res = res + sym;
-                } else {
-                    res = res + " ";
-                }
-
+            texts = [...texts].map(x => chars.indexOf(x) < 0 ? "" : x).join("")
+            if (texts.length > 1) {
+                var firstNon1 = [...texts].findIndex(x => x != "1");
+                texts = texts[Math.max(0,firstNon1)];
             }
-            res = res + "\n";
+            
+            console.log(x + " , " + y + " = " + texts);
+            //console.log(data);
+            res = res + (texts.length == 0?" ":texts);
         }
-        console.log(res);
-
-        await worker.terminate();
-
-
-        //var syms = data.data.symbols.filter(x => x.confidence > 50 && x.text != " ");
-        //var ocrResult = syms.map(sym => {
-        //    var cx = (sym.bbox.x0 + sym.bbox.x1) / 2;
-        //    var cy = (sym.bbox.y0 + sym.bbox.y1) / 2;
-        //    var X = chars.length * cx / 600;
-        //    var Y = chars.length * cy / 600;
-        //    return { value: sym.text, x: X, y: Y };
-        //});
-        //GLOBAL.DotNetReference.invokeMethodAsync('SetOCRResult', { result: ocrResult })
-
-    })();
+        res = res + "\n";
+    }
+    console.log(res);
+    //var syms = data.data.symbols.filter(x => x.confidence > 50 && x.text != " ");
+    //var ocrResult = syms.map(sym => {
+    //    var cx = (sym.bbox.x0 + sym.bbox.x1) / 2;
+    //    var cy = (sym.bbox.y0 + sym.bbox.y1) / 2;
+    //    var X = chars.length * cx / 600;
+    //    var Y = chars.length * cy / 600;
+    //    return { value: sym.text, x: X, y: Y };
+    //});
+    //GLOBAL.DotNetReference.invokeMethodAsync('SetOCRResult', { result: ocrResult })
 }
 
 
@@ -95,7 +66,7 @@ async function startCamera() {
     var sw = sudoku.clientWidth;
     var sh = sudoku.clientWidth;
     video.srcObject = stream;
-    video.setAttribute("style", "width:" + sw + "px;height:" + sh + "px;left:" + sx + "px;top:" + sy + "px;");
+    overlay(video);
     document.querySelector(".popup").classList.add("active");
 }
 function takePhoto() {
@@ -105,8 +76,18 @@ function takePhoto() {
     ctx.drawImage(video, 0, 0, video.videoHeight, video.videoHeight, 0, 0, canvas.width, canvas.width);
     ctx.putImageData(preprocessImage(canvas), 0, 0);
     image_data_url = canvas.toDataURL('image/jpeg');
-
+    overlay(canvas);
     recognize();
+}
+
+function overlay(el) {
+    var sudoku = document.querySelector(".sudoku");
+    const rect = sudoku.getBoundingClientRect();
+    var sx = rect.left;
+    var sy = rect.top;
+    var sw = sudoku.clientWidth;
+    var sh = sudoku.clientWidth;
+    el.setAttribute("style", "width:" + sw + "px;height:" + sh + "px;left:" + sx + "px;top:" + sy + "px;");
 }
 
 let thr = 0.27;
@@ -115,8 +96,10 @@ function preprocessImage(canvas) {
     const ctx = canvas.getContext('2d');
     
     const image = ctx.getImageData(0, 0, canvas.width, canvas.width);
-    thresholdFilter(image.data, thr);
-    dilate(image.data, canvas);
+    bw(image.data);
+    thrsh(image.data,canvas);
+    //thresholdFilter(image.data, thr);
+    //dilate(image.data, canvas);
     //invertColors(image.data);
     //dilate(image.data, canvas);
     //invertColors(image.data);
@@ -127,6 +110,165 @@ function preprocessImage(canvas) {
 }
 
 //from https://github.com/processing/p5.js/blob/main/src/image/filters.js
+
+function bw(pixels) {
+    for (let i = 0; i < pixels.length; i += 4) {
+        const red = pixels[i];
+        const green = pixels[i + 1];
+        const blue = pixels[i + 2];
+        const gray = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        pixels[i] = pixels[i + 1] = pixels[i + 2] = gray;
+    }
+}
+
+function thrsh(pixels, canvas) {
+    var w = canvas.width;
+    var h = canvas.height;
+    const out0 = new Int32Array(pixels.length / 4);
+    const out1 = new Int32Array(pixels.length / 4);
+    const r = 16;
+    for (var x = 0; x < w; ++x) {
+        for (var y = 0; y < w; ++y) {
+            var i = x + y * w;
+            var gray = pixels[i * 4];
+            var min = Math.max(30,gray);
+            var max = Math.min(150,gray);
+            for (var dx = -r; dx <= r; ++dx) {
+                var xx = x + dx;
+                if (xx < 0 || xx >= w)
+                    continue;
+                for (var dy = -r; dy <= r; ++dy) {
+                    var yy = y + dy;
+                    if (yy < 0 || yy >= h)
+                        continue;
+                    var j = xx + yy * w;
+                    const gray2 = pixels[j*4];
+                    min = Math.min(min, gray2);
+                    max = Math.max(max, gray2);
+                }
+            }
+            out0[i] = min;
+            out1[i] = max;
+        }
+    }
+    for (let i = 0; i < pixels.length/4; i ++)
+    {
+        var isLow = pixels[i * 4] < out0[i] * 2;
+        var isHigh = pixels[i * 4] > out1[i] * 0.7;
+        out0[i] = isLow && !isHigh ? 0 : 1;
+    }
+    const r2 = 7;
+    const lim2 = (r2 * 2 + 1) * (r2 * 2 + 1) - 70;
+    for (var iter = 0; iter < 0; ++iter) {
+        for (var x = 0; x < w; ++x) {
+            for (var y = 0; y < w; ++y) {
+                var i = x + y * w;
+                var A = out0[i];
+                var sumy = A;
+                for (var dx = -r2; dx <= r2; ++dx) {
+                    var xx = x + dx;
+                    if (xx < 0 || xx >= w)
+                        continue;
+                    for (var dy = -r2; dy <= r2; ++dy) {
+                        var yy = y + dy;
+                        if (yy < 0 || yy >= h)
+                            continue;
+                        var j = xx + yy * w;
+                        var B = out0[j];
+                        sumy = sumy + B;
+                    }
+                }
+
+                out1[i] = (A == 0 && sumy < lim2) ? 0 : 1;
+            }
+        }
+        for (var i = 0; i < pixels.length / 4; ++i)
+            out0[i] = out1[i];
+    }
+
+
+    const r3 = 4;
+    //perform(out0, out1, w, h, 1,(v) => v, (t, v) => Math.min(t, v), (t, o) => t);
+    //perform(out0, out1, w, h, r3,(v) => 0, (t, v) => t+(1-v), (t, o) => t);
+    //perform(out0, out1, w, h, r3, (v) => v, (t, v) => Math.max(t,v), (t, o) => t);
+    for (var iter = 0; iter < 4; ++iter) {
+        for (var x = 0; x < w; ++x) {
+            for (var y = 0; y < w; ++y) {
+                var i = x + y * w;
+                var A = out0[i];
+                var sum = 0;
+                for (var dx = -r3; dx <= r3; ++dx) {
+                    var xx = x + dx;
+                    if (xx < 0 || xx >= w)
+                        continue;
+                    for (var dy = -r3; dy <= r3; ++dy) {
+                        var yy = y + dy;
+                        if (yy < 0 || yy >= h)
+                            continue;
+                        var j = xx + yy * w;
+                        var B = out0[j];
+                        sum = sum + (1 - B);
+                    }
+                }
+                out1[i] = sum;
+            }
+        }
+        const lim3 = (r3 * 2 + 1) * (r3 * 2 + 1) * 0.33;
+        for (var x = 0; x < w; ++x) {
+            for (var y = 0; y < w; ++y) {
+                var i = x + y * w;
+                var A = out1[i];
+                var max = A;
+                for (var dx = -r3; dx <= r3; ++dx) {
+                    var xx = x + dx;
+                    if (xx < 0 || xx >= w)
+                        continue;
+                    for (var dy = -r3; dy <= r3; ++dy) {
+                        var yy = y + dy;
+                        if (yy < 0 || yy >= h)
+                            continue;
+                        var j = xx + yy * w;
+                        var B = out1[j];
+                        max = Math.max(max, B);
+                    }
+                }
+                out0[i] = out0[i] == 0 && max >= lim3 ? 0 : 1;
+            }
+        }
+    }
+    
+    for (var i = 0; i < pixels.length / 4; ++i)
+        out0[i] = out0[i] == 0 ? 0xFF000000 : 0xFFFFFFFF;
+    setPixels(pixels, out0);
+}
+
+function perform(out0, out1, w, h, r,v0,fun,agg) {
+    for (var x = 0; x < w; ++x) {
+        for (var y = 0; y < w; ++y) {
+            var i = x + y * w;
+            var A = out0[i];
+            var tmp = v0(A);
+            for (var dx = -r; dx <= r; ++dx) {
+                var xx = x + dx;
+                if (xx < 0 || xx >= w)
+                    continue;
+                for (var dy = -r; dy <= r; ++dy) {
+                    var yy = y + dy;
+                    if (yy < 0 || yy >= h)
+                        continue;
+                    var j = xx + yy * w;
+                    var B = out0[j];
+                    tmp = fun(tmp,B);
+                }
+            }
+            out1[i] = agg(tmp,out0[i]);
+        }
+    }
+    for (var i = 0; i < w*h; ++i)
+        out0[i] = out1[i];
+}
+
+
 function thresholdFilter(pixels, level) {
     if (level === undefined) {
         level = 0.5;

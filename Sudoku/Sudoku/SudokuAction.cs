@@ -14,7 +14,7 @@ namespace BlazorSudoku
     {
         public string Name { get;}
 
-        public int Complexity { get; }
+        public int Complexity { get; set; }
 
         public List<SudokuAction> Operations { get; set; } = new();
 

@@ -76,7 +76,7 @@ namespace BlazorSudoku
 
         public bool IsRow { get; }
         public bool IsCol { get; }
-        public bool IsBox { get; }
+        public bool IsBox => !IsColOrRow;
 
         public bool IsColOrRow => IsCol || IsRow;
 

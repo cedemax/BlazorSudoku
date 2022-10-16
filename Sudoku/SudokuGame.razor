@@ -141,9 +141,18 @@
                                             var dx = pos[1].x - pos[0].x;
                                             var angle = 180*Math.Atan2(dy,dx)/Math.PI;
                                             var len = Math.Sqrt(dx * dx + dy * dy);
+                                            (double x,double y) v1 = ((size*0.125)*(-0.5*dy-dx) / len, (size*0.125)*(0.5*dx-dy) / len);
+                                            (double x,double y) v2 = ((size*0.125)*(0.5*dy-dx) / len, (size*0.125)*(-0.5*dx-dy) / len);
+                                            (double x, double y) p0 = (pos[0].x + (0.5 * size / sudoku.SqrtN)*(1+0.5*dx/len), pos[0].y + (0.5 * size / sudoku.SqrtN)*(1+0.5*dy/len));
+                                            (double x, double y) p1 = (pos[1].x + (0.5 * size / sudoku.SqrtN)*(1-0.5*dx/len), pos[1].y + (0.5 * size / sudoku.SqrtN)*(1-0.5*dy/len));
+                                            //p0 = (pos[0].x, pos[0].y);
+                                            //p1 = (pos[1].x, pos[1].y);
                                         }
-                                        <div class="subHint link @(linkHint.Link.Strong?"strong":"")" style="left:@(pos[0].x+0.5*size/sudoku.SqrtN)px;top:@(pos[0].y+0.5*size/sudoku.SqrtN)px;width:@(len)px;transform:rotate(@(angle)deg)">
-                                        </div>
+                                        <svg width="@(sudoku.N*size)px" height="@(sudoku.N*size)px" class="@(linkHint.Link.Strong?"strong":"")">
+                                            <line x1="@p0.x" y1="@p0.y" x2="@p1.x" y2="@p1.y"></line>
+                                            <line x1="@p1.x" y1="@p1.y" x2="@(p1.x+v1.x)" y2="@(p1.y+v1.y)"></line>
+                                            <line x1="@p1.x" y1="@p1.y" x2="@(p1.x+v2.x)" y2="@(p1.y+v2.y)"></line>
+                                        </svg>
                           
                                     </div>
                                 }
@@ -233,7 +242,7 @@
         wide = dims.Width - dims.Height > 300;
         var min = wide
             ? Math.Min(dims.Height, dims.Width - 300)
-            : Math.Min(dims.Width, dims.Height - 400);
+            : Math.Min(dims.Width, dims.Height - 500);
         var N = sudoku.N;
         size = (min -4)/ (double)N;
         if(size != size0 || wide != wide0)

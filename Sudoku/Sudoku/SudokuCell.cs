@@ -19,6 +19,10 @@ namespace BlazorSudoku
         /// The cells possible values were reduced to one
         /// </summary>
         public event EventHandler<SudokuCellEventArgs> CellBecameSet;
+        /// <summary>
+        /// The cells possible values were cleared
+        /// </summary>
+        public event EventHandler<SudokuCellEventArgs> CellBecameUnSet;
 
 
         public bool IsSet => possibleValues.Count == 1;
@@ -30,6 +34,9 @@ namespace BlazorSudoku
 
         private string pid;
         public string PID => pid;
+
+        private string key;
+        public string Key => key;
 
         public HashSet<SudokuDomain> Domains { get; } = new HashSet<SudokuDomain>();
 
@@ -60,6 +67,7 @@ namespace BlazorSudoku
         {
             X = x;
             Y = y;
+            key = $"{x},{y}";
         }
         /// <summary>
         /// Other Cells that are visible from this cell
@@ -114,6 +122,16 @@ namespace BlazorSudoku
                 possibleValues.Add(n);
                 CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
             }
+        }
+
+        public void Unset(int n)
+        {
+            Value = null;
+            for (var i = 0; i < n; ++i)
+                possibleValues.Add(i);
+            PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
+            CellBecameUnSet?.Invoke(this, new SudokuCellEventArgs(this));
+            pid = string.Join("", PossibleValues);
         }
 
         public void SetOption(int n)

@@ -1,4 +1,5 @@
-﻿using BlazorSudoku.Techniques;
+﻿using BlazorSudoku.Generators;
+using BlazorSudoku.Techniques;
 
 namespace BlazorSudoku
 {
@@ -23,10 +24,12 @@ namespace BlazorSudoku
         public string PID => string.Join(";", Cells.Select(x => x.PID));
 
 
-        public string Serialize()
+        public string Serialize(bool options = true)
         {
             var index = Cells.Select((x, i) => (x, i)).ToDictionary(x => x.x, x => x.i);
-            var cells = Cells.Select(x => $"Cell {x.X},{x.Y},{x.Value?.ToString() ?? "-1"},{string.Join(',',x.PossibleValues)}").ToArray();
+            var cells = options
+                ? Cells.Select(x => $"Cell {x.X},{x.Y},{x.Value?.ToString() ?? "-1"},{string.Join(',', x.PossibleValues)}").ToArray()
+                : Cells.Select(x => $"Cell {x.X},{x.Y},{x.Value?.ToString() ?? "-1"}").ToArray();
             var domains = Domains.Select(x => $"Domain {string.Join(",", x.Cells.Select(y => index[y]))}");
 
             var sudoku = $"Sudoku {Name??"NoName"} {N} {Cells.Length} cells, {Domains.Length} domains\n" +
@@ -127,9 +130,15 @@ namespace BlazorSudoku
             }
 
             foreach (var cell in Cells)
+            {
                 cell.CellBecameSet += (sender, args) => { UnsetCells.Remove(args.Cell); };
+                cell.CellBecameUnSet += (sender, args) => { UnsetCells.Add(args.Cell); };
+            }
             foreach (var domain in Domains)
+            {
                 domain.DomainBecameSet += (sender, args) => { UnsetDomains.Remove(args.Domain); };
+                domain.DomainBecameUnSet += (sender, args) => { UnsetDomains.Add(args.Domain); };
+            }
         }
 
 
@@ -172,9 +181,9 @@ namespace BlazorSudoku
             //Solve();
         }
 
-        public int Grade(out string moveList)
+        public int Grade(out string moveList,out Sudoku solution)
         {
-            var solver = new Solver(SudokuTechnique.GetAllTechiques().Where(x => x is not Solver && x is not SelectOnlies).OrderBy(x => x.MinComplexity).ToList());
+            var solver = new Solver(SudokuTechnique.GetAllTechiques().Where(x => x is not Solver && x is not SelectOnlies && x is not Simple).OrderBy(x => x.MinComplexity).ToList());
             var sudoku = Clone();
             var hardestMove = 0;
             var moves = new List<SudokuMove>();
@@ -220,6 +229,7 @@ namespace BlazorSudoku
             if (prevs > 0)
                 moveList += $" x{prevs}";
 
+            solution = sudoku;
             return (int)Math.Round(grade);
         }
 
@@ -252,10 +262,10 @@ namespace BlazorSudoku
             }
         }
 
-
-        public Sudoku Clone()
+        public bool IsSolved => UnsetCells.Count == 0;
+        public Sudoku Clone(bool options = true)
         {
-            return Parse(Serialize());
+            return Parse(Serialize(options));
         }
 
         public static Sudoku StandardNxN(int n = 3)

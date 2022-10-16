@@ -1,4 +1,6 @@
-﻿namespace BlazorSudoku.Techniques
+﻿using BlazorSudoku.Generators;
+
+namespace BlazorSudoku.Techniques
 {
     public class Solver : SudokuTechnique
     {
@@ -16,7 +18,7 @@
         {
             var ret = new List<SudokuMove>();
             if (techs.Count == 0)
-                techs = GetAllTechiques().Where(x => x is not Solver).OrderBy(x => x.MinComplexity).ToList();
+                techs = GetAllTechiques().Where(x => x is not Solver && x is not Simple).OrderBy(x => x.MinComplexity).ToList();
 
             foreach(var solver in techs)
             {

@@ -27,6 +27,11 @@ namespace BlazorSudoku
         /// </summary>
         public event EventHandler<SudokuDomainEventArgs> DomainBecameSet;
 
+        /// <summary>
+        /// The domains possible values were changed
+        /// </summary>
+        public event EventHandler<SudokuDomainEventArgs> DomainBecameUnSet;
+
         public SudokuDomain(HashSet<SudokuCell> cells,string? name = null)
         {
             Cells = cells;
@@ -36,6 +41,7 @@ namespace BlazorSudoku
             foreach(var cell in cells)
             {
                 cell.CellBecameSet += OnCellBecameSet;
+                cell.CellBecameUnSet += OnCellBecameUnSet;
                 cell.PossibleValuesChanged += OnPossibleValuesChanged;
             }
 
@@ -65,6 +71,22 @@ namespace BlazorSudoku
 
             if (Unset.Count == 0)
                 DomainBecameSet?.Invoke(this, new SudokuDomainEventArgs(this));
+        }
+
+        private void OnCellBecameUnSet(object? sender, SudokuCellEventArgs args)
+        {
+            UnsetCells.Add(args.Cell);
+            SetCells.Remove(args.Cell);
+            Set.Clear();
+            foreach (var n in args.Cell.PossibleValues)
+                Unset.Add(n);
+            foreach (var cell in SetCells)
+            {
+                Set.Add(cell.Value!.Value);
+                Unset.Remove(cell.Value!.Value);
+            }
+
+            DomainBecameUnSet?.Invoke(this, new SudokuDomainEventArgs(this));
         }
 
         private void OnPossibleValuesChanged(object? sender, SudokuCellEventArgs args)

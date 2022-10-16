@@ -2,6 +2,8 @@
 {
     public static class SetExtensions
     {
+        private static Random rng = new Random();
+
         public static IEnumerable<T[]> GetCombinations<T>(this IEnumerable<T> set,int n)
         {
             return RecurseCombinations(set.ToArray(),0,n-1,new T[n]);
@@ -26,6 +28,14 @@
             foreach (var arr in arrs.Skip(1))
                 ret.IntersectWith(arr);
             return ret;
+        }
+
+        public static T GetRandom<T>(this IEnumerable<T> v)
+        {
+            if (v is IList<T> c)
+                return c[rng.Next(0, c.Count)];
+            var vArr = v.ToArray();
+            return vArr[rng.Next(0, vArr.Length)];
         }
 
     }

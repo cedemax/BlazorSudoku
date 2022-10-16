@@ -10,8 +10,8 @@ namespace BlazorSudoku
 
         public HashSet<SudokuCell> UnsetCells { get; private set; } = new HashSet<SudokuCell>();
         public HashSet<SudokuCell> SetCells { get; private set; } = new HashSet<SudokuCell>();
-        public HashSet<int> Unset { get; private set; } = new HashSet<int>();
-        public HashSet<int> Set { get; private set; } = new HashSet<int>();
+        public FixedSizeHashSet Unset { get; private set; }
+        public FixedSizeHashSet Set { get; private set; }
 
         public HashSet<SudokuDomain> IntersectingDomains { get; private set; } = new HashSet<SudokuDomain>();
         public HashSet<SudokuDomain> IntersectingUnsetDomains { get; private set; } = new HashSet<SudokuDomain>();
@@ -27,7 +27,7 @@ namespace BlazorSudoku
         /// </summary>
         public event EventHandler<SudokuDomainEventArgs> DomainBecameSet;
 
-        public SudokuDomain(HashSet<SudokuCell> cells,string? name = null)
+        public SudokuDomain(HashSet<SudokuCell> cells,int N,string? name = null)
         {
             Cells = cells;
             IsRow = cells.Select(x => x.Y).Distinct().Count() == 1;
@@ -38,6 +38,9 @@ namespace BlazorSudoku
                 cell.CellBecameSet += OnCellBecameSet;
                 cell.PossibleValuesChanged += OnPossibleValuesChanged;
             }
+
+            Unset = new FixedSizeHashSet(N);
+            Set = new FixedSizeHashSet(N);
 
             Name = name??ToString();
         }

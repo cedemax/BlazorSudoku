@@ -5,16 +5,17 @@ namespace BlazorSudoku
     /// <summary>
     /// A high performance low memory fixed size hashset
     /// </summary>
-    public class FixedSizeHashSet : ISet<int>, IReadOnlySet<int>
+    public class ReadOnlyFixedSizeHashSet : IReadOnlySet<int>
     {
-        public FixedSizeHashSet(int n)
+        public ReadOnlyFixedSizeHashSet(int n,int value)
         {
             N = n;
+            flags = value;
         }
 
-        public bool IsReadOnly => false;
+        public bool IsReadOnly => true;
 
-        private int flags = 0;
+        private readonly int flags = 0;
         public int N { get; }
         public int Count { get; private set; }
 

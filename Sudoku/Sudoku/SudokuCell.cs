@@ -24,7 +24,7 @@ namespace BlazorSudoku
         public bool IsSet => possibleValues.Count == 1;
         public bool IsUnset => !IsSet;
 
-        private HashSet<int> possibleValues = new();
+        private FixedSizeHashSet possibleValues;
 
         public IReadOnlySet<int> PossibleValues => possibleValues;
 
@@ -56,10 +56,15 @@ namespace BlazorSudoku
         public int TopBorder => GetBorder(2);
         public int BottomBorder => GetBorder(3);
 
-        public SudokuCell(int x,int y)
+        public SudokuCell(int x,int y,int N)
         {
+            if (N <= 0)
+                throw new ArgumentOutOfRangeException(nameof(N));
+
             X = x;
             Y = y;
+
+            possibleValues = new FixedSizeHashSet(N);
         }
         /// <summary>
         /// Other Cells that are visible from this cell
@@ -100,7 +105,8 @@ namespace BlazorSudoku
             if (force)
             {
                 Value = n;
-                possibleValues = new HashSet<int> { n };
+                possibleValues.Clear();
+                possibleValues.Add(n);
             }
 
             if (!possibleValues.Contains(n))
@@ -132,7 +138,9 @@ namespace BlazorSudoku
         {
             if (force)
             {
-                possibleValues = ns.ToHashSet();
+                possibleValues.Clear();
+                foreach (var n in ns)
+                    possibleValues.Add(n);
                 return;
             }
 

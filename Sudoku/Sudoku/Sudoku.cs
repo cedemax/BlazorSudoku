@@ -41,7 +41,6 @@ namespace BlazorSudoku
             var cells = new List<SudokuCell>();
             var domains = new List<SudokuDomain>();
             string name = "ParsedSudoku";
-            int N = 0;
             var lines = saved.Split("\n");
             foreach(var line in lines)
             {
@@ -51,7 +50,6 @@ namespace BlazorSudoku
                     case "sudoku":
                         var things = line.Split(' ').Skip(1).ToArray();
                         name = things[0];
-                        N = int.Parse(things[1]);
                         break;
                     case "cell":
                         var vals = line.Split(' ').Last().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();

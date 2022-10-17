@@ -14,26 +14,28 @@ namespace BlazorSudoku
         /// <summary>
         /// The cells possible values changed, but the cell did not become set
         /// </summary>
-        public event EventHandler<SudokuCellEventArgs> PossibleValuesChanged;
+        public event EventHandler<SudokuCellEventArgs>? PossibleValuesChanged;
         /// <summary>
         /// The cells possible values were reduced to one
         /// </summary>
-        public event EventHandler<SudokuCellEventArgs> CellBecameSet;
+        public event EventHandler<SudokuCellEventArgs>? CellBecameSet;
         /// <summary>
         /// The cells possible values were cleared
         /// </summary>
-        public event EventHandler<SudokuCellEventArgs> CellBecameUnSet;
+        public event EventHandler<SudokuCellEventArgs>? CellBecameUnSet;
 
 
-        public bool IsSet => possibleValues.Count == 1;
+        public bool IsSet => PossibleValues.Count == 1;
         public bool IsUnset => !IsSet;
 
-        private HashSet<int> possibleValues = new();
+        private Set32 possibleValues;
 
-        public IReadOnlySet<int> PossibleValues => possibleValues;
+        public ref Set32 PossibleValues => ref possibleValues;
 
-        private string pid;
-        public string PID => pid;
+        /// <summary>
+        /// a key describing the possible values
+        /// </summary>
+        public uint PID => PossibleValues.Flag;
 
         private string key;
         public string Key => key;
@@ -43,15 +45,15 @@ namespace BlazorSudoku
         /// <summary>
         /// Lazy loading
         /// </summary>
-        private int[] border = new int[4] { -1, -1, -1, -1 };
+        private readonly int[] border = new int[4] { -1, -1, -1, -1 };
         private int GetBorder(int i)
         {
             if (border[i] < 0)
                 border[i] = i switch
                 {
-                    0 => Domains.Count(x => x.Cells.Any(x => x.X == X - 1 && x.Y == Y)) == 0 ? 2 : 0,
+                    0 => !Domains.Any(x => x.Cells.Any(x => x.X == X - 1 && x.Y == Y)) ? 2 : 0,
                     1 => Domains.Count - Domains.Count(x => x.Cells.Any(x => x.X == X + 1 && x.Y == Y)),
-                    2 => Domains.Count(x => x.Cells.Any(x => x.X == X && x.Y == Y - 1)) == 0 ? 2 : 0,
+                    2 => !Domains.Any(x => x.Cells.Any(x => x.X == X && x.Y == Y - 1)) ? 2 : 0,
                     3 => Domains.Count - Domains.Count(x => x.Cells.Any(x => x.X == X && x.Y == Y + 1)),
                     _ => throw new NotImplementedException(),
                 };
@@ -67,7 +69,8 @@ namespace BlazorSudoku
         {
             X = x;
             Y = y;
-            key = $"{x},{y}";
+
+            PossibleValues = Set32.Empty;
         }
         /// <summary>
         /// Other Cells that are visible from this cell
@@ -81,7 +84,6 @@ namespace BlazorSudoku
 
         public void Init()
         {
-            pid = string.Join("", PossibleValues);
             Visible = Domains.SelectMany(x => x.Cells).Where(x => x != this).ToHashSet();
             VisibleUnset = Visible.Where(x => x.IsUnset).ToHashSet();
             foreach (var cell in VisibleUnset)
@@ -108,18 +110,18 @@ namespace BlazorSudoku
             if (force)
             {
                 Value = n;
-                possibleValues = new HashSet<int> { n };
+                PossibleValues.Clear();
+                PossibleValues.Add(n);
             }
 
-            if (!possibleValues.Contains(n))
+            if (!PossibleValues.Contains(n))
                 throw new ArgumentException("Not possible");
             Value = n;
-            pid = n.ToString();
 
-            if (possibleValues.Count != 1)
+            if (PossibleValues.Count != 1)
             {
-                possibleValues.Clear();
-                possibleValues.Add(n);
+                PossibleValues.Clear();
+                PossibleValues.Add(n);
                 CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
             }
         }
@@ -138,11 +140,10 @@ namespace BlazorSudoku
         {
             if (IsSet)
                 throw new Exception("Already set");
-            if (!possibleValues.Contains(n))
+            if (!PossibleValues.Contains(n))
                 throw new ArgumentException("Not possible");
-            pid = n.ToString();
-            possibleValues.Clear();
-            possibleValues.Add(n);
+            PossibleValues.Clear();
+            PossibleValues.Add(n);
             CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
         }
 
@@ -150,12 +151,16 @@ namespace BlazorSudoku
         {
             if (force)
             {
-                possibleValues = ns.ToHashSet();
+                PossibleValues.Clear();
+                foreach (var n in ns)
+                    PossibleValues.Add(n);
                 return;
             }
 
             if (IsSet)
                 throw new Exception();
+
+
             var arr = ns.ToHashSet();
             if(arr.Count == 1)
             {
@@ -163,13 +168,12 @@ namespace BlazorSudoku
                 return;
             }
 
-            if (!arr.All(x => possibleValues.Contains(x)))
+            if (!arr.All(x => PossibleValues.Contains(x)))
                 throw new Exception("Not possible");
 
-            possibleValues.Clear();
+            PossibleValues.Clear();
             foreach (var n in ns)
-                possibleValues.Add(n);
-            pid = string.Join("", PossibleValues);
+                PossibleValues.Add(n);
             PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
         }
 
@@ -177,11 +181,10 @@ namespace BlazorSudoku
         {
             if (IsSet)
                 throw new Exception();
-            if (possibleValues.Contains(n))
+            if (PossibleValues.Contains(n))
             {
-                possibleValues.Remove(n);
-                pid = string.Join("", PossibleValues);
-                if (possibleValues.Count == 1)
+                PossibleValues.Remove(n);
+                if (PossibleValues.Count == 1)
                     CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
                 else
                     PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
@@ -198,36 +201,32 @@ namespace BlazorSudoku
                 RemoveOption(arr.First());
                 return;
             }
-            var count = possibleValues.Count;
+            var count = PossibleValues.Count;
             foreach (var n in ns)
-                possibleValues.Remove(n);
-            if(possibleValues.Count != count)
+                PossibleValues.Remove(n);
+            if(PossibleValues.Count != count)
             {
-                pid = string.Join("", PossibleValues);
-                if (possibleValues.Count == 1)
+                if (PossibleValues.Count == 1)
                     CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
                 else
                     PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
             }
            
         }
-
         public void RemoveOptions(Func<int,bool> filter)
         {
             if (IsSet)
                 throw new Exception();
-            possibleValues.RemoveWhere(x => filter(x));
-            var count = possibleValues.Count;
-            if (possibleValues.Count != count)
+            PossibleValues.RemoveWhere(x => filter(x));
+            var count = PossibleValues.Count;
+            if (PossibleValues.Count != count)
             {
-                pid = string.Join("", PossibleValues);
-                if (possibleValues.Count == 1)
+                if (PossibleValues.Count == 1)
                     CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
                 else
                     PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
             }
         }
-
-        public override string ToString() => $"X:{X},Y:{Y} {PID}";
+        public override string ToString() => $"X:{X},Y:{Y} '{Convert.ToString(PID,2)}'";
     }
 }

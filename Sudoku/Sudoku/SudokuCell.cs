@@ -129,11 +129,11 @@ namespace BlazorSudoku
         public void Unset(int n)
         {
             Value = null;
+            PossibleValues.Clear();
             for (var i = 0; i < n; ++i)
-                possibleValues.Add(i);
+                PossibleValues.Add(i);
             PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
             CellBecameUnSet?.Invoke(this, new SudokuCellEventArgs(this));
-            pid = string.Join("", PossibleValues);
         }
 
         public void SetOption(int n)

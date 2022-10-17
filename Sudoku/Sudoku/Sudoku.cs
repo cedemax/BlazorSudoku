@@ -55,7 +55,7 @@ namespace BlazorSudoku
                         break;
                     case "cell":
                         var vals = line.Split(' ').Last().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
-                        var cell = new SudokuCell(vals[0], vals[1],N);
+                        var cell = new SudokuCell(vals[0], vals[1]);
                         if (vals.Length >= 3 && vals[2] >= 0)
                             cell.SetValue(vals[2],true);
                         if(vals.Length >= 4 && !cell.Value.HasValue)
@@ -64,7 +64,7 @@ namespace BlazorSudoku
                         break;
                     case "domain":
                         var indices = line.Split(' ').Last().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
-                        var domain = new SudokuDomain(cells.Select((x, i) => (x, i)).Where(x => indices.Contains(x.i)).Select(x => x.x).ToHashSet(),N);
+                        var domain = new SudokuDomain(cells.Select((x, i) => (x, i)).Where(x => indices.Contains(x.i)).Select(x => x.x).ToHashSet());
                         domains.Add(domain);
                         break;
                 }
@@ -264,15 +264,15 @@ namespace BlazorSudoku
         {
             var N = n * n;
 
-            var cells = Enumerable.Range(0, N).SelectMany(x => Enumerable.Range(0, N).Select(y => new SudokuCell(x, y,N))).ToArray();
+            var cells = Enumerable.Range(0, N).SelectMany(x => Enumerable.Range(0, N).Select(y => new SudokuCell(x, y))).ToArray();
             var domains = new List<SudokuDomain>();
 
 
             for (var i = 0; i < N; i++)
             {
-                domains.Add(new SudokuDomain(cells.Where(x => x.X == i).ToHashSet(), N));  // columns
-                domains.Add(new SudokuDomain(cells.Where(x => x.Y == i).ToHashSet(), N));  // rows
-                domains.Add(new SudokuDomain(cells.Where(x => ((x.X / n) * n + (x.Y / n)) == i).ToHashSet(),N));  // squares
+                domains.Add(new SudokuDomain(cells.Where(x => x.X == i).ToHashSet()));  // columns
+                domains.Add(new SudokuDomain(cells.Where(x => x.Y == i).ToHashSet()));  // rows
+                domains.Add(new SudokuDomain(cells.Where(x => ((x.X / n) * n + (x.Y / n)) == i).ToHashSet()));  // squares
             }
             return new Sudoku(cells, domains.ToArray());
         }

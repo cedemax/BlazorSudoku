@@ -10,8 +10,8 @@ namespace BlazorSudoku
 
         public HashSet<SudokuCell> UnsetCells { get; private set; } = new HashSet<SudokuCell>();
         public HashSet<SudokuCell> SetCells { get; private set; } = new HashSet<SudokuCell>();
-        public FixedSizeHashSet Unset { get; private set; }
-        public FixedSizeHashSet Set { get; private set; }
+        public Set32 Unset { get; private set; }
+        public Set32 Set { get; private set; }
 
         public HashSet<SudokuDomain> IntersectingDomains { get; private set; } = new HashSet<SudokuDomain>();
         public HashSet<SudokuDomain> IntersectingUnsetDomains { get; private set; } = new HashSet<SudokuDomain>();
@@ -21,13 +21,13 @@ namespace BlazorSudoku
         /// <summary>
         /// The domains possible values changed, but the cell did not become set
         /// </summary>
-        public event EventHandler<SudokuDomainEventArgs> UnsetChanged;
+        public event EventHandler<SudokuDomainEventArgs>? UnsetChanged;
         /// <summary>
         /// The domains possible values were reduced to zero
         /// </summary>
-        public event EventHandler<SudokuDomainEventArgs> DomainBecameSet;
+        public event EventHandler<SudokuDomainEventArgs>? DomainBecameSet;
 
-        public SudokuDomain(HashSet<SudokuCell> cells,int N,string? name = null)
+        public SudokuDomain(HashSet<SudokuCell> cells,string? name = null)
         {
             Cells = cells;
             IsRow = cells.Select(x => x.Y).Distinct().Count() == 1;
@@ -39,8 +39,8 @@ namespace BlazorSudoku
                 cell.PossibleValuesChanged += OnPossibleValuesChanged;
             }
 
-            Unset = new FixedSizeHashSet(N);
-            Set = new FixedSizeHashSet(N);
+            Unset = Set32.Empty;
+            Set = Set32.Empty;
 
             Name = name??ToString();
         }
@@ -55,16 +55,16 @@ namespace BlazorSudoku
 
             UnsetCells = Cells.Where(x => x.IsUnset).ToHashSet();
             SetCells = Cells.Where(x => x.IsSet).ToHashSet();
-            Unset = UnsetCells.SelectMany(x => x.PossibleValues).ToHashSet();
-            Set = SetCells.Select(x => x.PossibleValues.First()).ToHashSet();
+            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
+            Set = SetCells.Select(x => x.PossibleValues).Union();
         }
 
         private void OnCellBecameSet(object? sender,SudokuCellEventArgs args)
         {
             UnsetCells.Remove(args.Cell);
             SetCells.Add(args.Cell);
-            Unset.Remove(args.Cell.PossibleValues.First());
-            Set.Add(args.Cell.PossibleValues.First());
+            Unset.ExceptWith(args.Cell.PossibleValues);
+            Set.UnionWith(args.Cell.PossibleValues);
 
             if (Unset.Count == 0)
                 DomainBecameSet?.Invoke(this, new SudokuDomainEventArgs(this));

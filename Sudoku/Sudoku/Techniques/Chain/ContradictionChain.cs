@@ -2,7 +2,7 @@
 {
     public class ContradictionChain : ChainTechnique
     {
-        public override int MinComplexity => 36;
+        public override int MinComplexity => 100;
 
 
         protected override IEnumerable<SudokuChainNode> Starts(Sudoku sudoku)
@@ -166,6 +166,6 @@
             }
         }
         protected override int GetComplexity(SudokuChainNode node) => GetComplexity(node.Length);
-        private int GetComplexity(int len) => (int)Math.Round(Math.Pow(len, 1.5) * 8);
+        private int GetComplexity(int len) => (int)Math.Max(MinComplexity,Math.Round(Math.Pow(len, 1.5) * MinComplexity/6));
     }
 }

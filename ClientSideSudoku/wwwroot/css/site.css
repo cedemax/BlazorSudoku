@@ -121,8 +121,10 @@ a, .btn-link {
     width: 100%;
 }
 .thin .techButtons {
-    display:flex;
-    flex-wrap:wrap;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 800px;
+    margin:auto;
 }
 .thin .techButton{
     width:50%;
@@ -132,8 +134,12 @@ a, .btn-link {
     padding: .175rem .75rem;
 }
 @media screen and (max-width: 600px) {
+    .thin .techButtons {
+        display: grid;
+        grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    }
     .thin .techButton {
-        width: 33%;
+        width:auto;
     }
     .thin .techButton > .btn {
         font-size: 10px;
@@ -216,4 +222,13 @@ a, .btn-link {
 }
 .sudoku > .move > .hint > .subHint.link.strong {
     height: 4px;
+}
+
+svg{
+    stroke:gray;
+    stroke-width:2px;
+}
+
+svg.strong {
+    stroke: black;
 }

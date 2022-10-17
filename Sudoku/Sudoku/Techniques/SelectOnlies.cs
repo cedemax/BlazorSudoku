@@ -8,7 +8,7 @@ namespace BlazorSudoku.Techniques
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
-            var move = new SudokuMove("Mark Cells",0);
+            var move = new SudokuMove("Mark Cells", MinComplexity);
             foreach (var cell in sudoku.Cells.Where(x => x.PossibleValues.Count == 1 && !x.Value.HasValue))
                 move.Operations.Add(new SudokuAction(cell, SudokuActionType.SetValue, cell.PossibleValues.First(), "Mark cell"));
             if(!move.IsEmpty)

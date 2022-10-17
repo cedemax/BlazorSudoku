@@ -15,6 +15,15 @@
             }
         </select>
     </div>
+    <div class="form-group">
+        <select class="form-control" @onchange="Generate">
+            <option disabled selected>Generate a sudoku</option>
+            @foreach (var generator in SudokuGenerator.GetAllGenerators())
+            {
+                <option>@generator.GetType().Name</option>
+            }
+        </select>
+    </div>
     <button class="btn btn-primary" @onclick="Save">Save</button>
     <button class="btn btn-danger" @onclick="Delete">Delete</button>
     <button class="btn btn-primary" @onclick="Reload">Reload</button>
@@ -64,5 +73,14 @@
             sudoku = Sudoku.Parse(File.ReadAllText(path));
             game.Step();
         }
+    }
+    private void Generate(ChangeEventArgs changeEvent)
+    {
+        var val = (string)changeEvent.Value;
+        var generator = SudokuGenerator.GetAllGenerators().First(x => x.GetType().Name == val);
+        var moves = generator.GetMoves(sudoku);
+        foreach (var move in moves)
+            move.Perform(sudoku);
+        game.Step();
     }
 }

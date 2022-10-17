@@ -37,7 +37,7 @@ namespace BlazorSudoku
         /// </summary>
         public uint PID => PossibleValues.Flag;
 
-        private string key;
+        private readonly string key;
         public string Key => key;
 
         public HashSet<SudokuDomain> Domains { get; } = new HashSet<SudokuDomain>();
@@ -71,6 +71,7 @@ namespace BlazorSudoku
             Y = y;
 
             PossibleValues = Set32.Empty;
+            key = $"{x},{y}";
         }
         /// <summary>
         /// Other Cells that are visible from this cell
@@ -227,6 +228,6 @@ namespace BlazorSudoku
                     PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
             }
         }
-        public override string ToString() => $"X:{X},Y:{Y} '{Convert.ToString(PID,2)}'";
+        public override string ToString() => $"X:{X},Y:{Y} '{string.Join(" ",PossibleValues.Select(x => x+1))}'";
     }
 }

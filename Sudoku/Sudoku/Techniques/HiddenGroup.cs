@@ -4,12 +4,21 @@ namespace BlazorSudoku.Techniques
 {
     public class HiddenGroup : SudokuTechnique
     {
-        public override int MinComplexity => 8;
+        private readonly int maxGroupSize;
+
+        public HiddenGroup() { maxGroupSize = 5; }
+        public HiddenGroup(int maxGroupSize)
+        {
+            if (maxGroupSize < 2)
+                throw new ArgumentOutOfRangeException(nameof(maxGroupSize));
+            this.maxGroupSize = maxGroupSize;
+        }
+        public override int MinComplexity => 40;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            for (var n = 2; n < 5; ++n)
+            for (var n = 2; n < maxGroupSize; ++n)
             {
                 if (GetComplexity(n) < MinComplexity)
                     return moves;
@@ -43,7 +52,7 @@ namespace BlazorSudoku.Techniques
             return moves;
         }
 
-        private int GetComplexity(int n) => 2 * n * n;
+        private int GetComplexity(int n) => (n * n)* MinComplexity / 4;
 
         private string GetName(int n)
         {

@@ -69,8 +69,8 @@ namespace BlazorSudoku
         {
             UnsetCells.Remove(args.Cell);
             SetCells.Add(args.Cell);
-            Unset.ExceptWith(args.Cell.PossibleValues);
-            Set.UnionWith(args.Cell.PossibleValues);
+            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
+            Set = SetCells.Select(x => x.PossibleValues).Union();
 
             if (Unset.Count == 0)
                 DomainBecameSet?.Invoke(this, new SudokuDomainEventArgs(this));
@@ -80,21 +80,16 @@ namespace BlazorSudoku
         {
             UnsetCells.Add(args.Cell);
             SetCells.Remove(args.Cell);
-            Set.Clear();
-            foreach (var n in args.Cell.PossibleValues)
-                Unset.Add(n);
-            foreach (var cell in SetCells)
-            {
-                Set.Add(cell.Value!.Value);
-                Unset.Remove(cell.Value!.Value);
-            }
+            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
+            Set = SetCells.Select(x => x.PossibleValues).Union();
 
             DomainBecameUnSet?.Invoke(this, new SudokuDomainEventArgs(this));
         }
 
         private void OnPossibleValuesChanged(object? sender, SudokuCellEventArgs args)
         {
-            // no use yet
+            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
+            Set = SetCells.Select(x => x.PossibleValues).Union();
         }
 
         public bool Overlaps(params SudokuDomain[] others) => others.All(x => x.IntersectingDomains.Contains(this));

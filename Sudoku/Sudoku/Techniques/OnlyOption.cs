@@ -4,7 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class OnlyOption : SudokuTechnique
     {
-        public override int MinComplexity => 8;
+        public override int MinComplexity => 20;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             if (complexityLimit < MinComplexity)
@@ -22,7 +22,8 @@ namespace BlazorSudoku.Techniques
                         {
                             if (done.Contains((cell, pvalue)))
                                 continue;
-                            var move = new SudokuMove("Only remaining option",8);
+                            // challenge scales with more empty cells
+                            var move = new SudokuMove("Only remaining option", Math.Max(domain.Unset.Count*5,MinComplexity));
                             move.Operations.Add(new SudokuAction(cell, SudokuActionType.SetOnlyPossible, pvalue, $"Only possible cell in domain {domain}"));
                             move.Hints.Add(new SudokuDomainHint(domain, SudokuHint.Direct));
                             moves.Add(move);

@@ -3,7 +3,7 @@ namespace BlazorSudoku.Techniques
 {
     public class MultiColor : SudokuTechnique
     {
-        public override int MinComplexity => 32;
+        public override int MinComplexity => 100;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit)
         {
             if (complexityLimit < MinComplexity)
@@ -35,7 +35,7 @@ namespace BlazorSudoku.Techniques
                     var colorA = colorPair[0];
                     var colorB = colorPair[1];
 
-                    var move = new SudokuMove($"Dual Color on {n + 1}", colorPair.Length* coloring.Count * 4);
+                    var move = new SudokuMove($"Dual Color on {n + 1}", Math.Max(MinComplexity,coloring.Count * 15));
                     // too complex
                     if (move.Complexity > complexityLimit)
                         continue;

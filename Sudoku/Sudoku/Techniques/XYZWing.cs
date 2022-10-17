@@ -4,7 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class XYZWing : SudokuTechnique
     {
-        public override int MinComplexity => 15;
+        public override int MinComplexity => 60;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             if (complexityLimit < MinComplexity)
@@ -35,7 +35,7 @@ namespace BlazorSudoku.Techniques
 
                                 if (cell3 != null)
                                 {
-                                    var move = new SudokuMove("XYZ-Wing", 15);
+                                    var move = new SudokuMove("XYZ-Wing", MinComplexity);
 
                                     var z = cell3.PossibleValues.Intersect(cell2.PossibleValues).Single();
                                     var y = yz.Except(new int[] { z }).Single();

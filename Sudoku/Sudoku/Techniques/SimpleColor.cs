@@ -3,7 +3,18 @@ namespace BlazorSudoku.Techniques
 {
     public class SimpleColor : SudokuTechnique
     {
-        public override int MinComplexity => 8;
+
+        private readonly int maxChainLength;
+
+        public SimpleColor() { maxChainLength = 128; }
+        public SimpleColor(int maxChainLength)
+        {
+            if (maxChainLength < 2)
+                throw new ArgumentOutOfRangeException(nameof(maxChainLength));
+            this.maxChainLength = maxChainLength;
+        }
+
+        public override int MinComplexity => 40;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             if (complexityLimit < MinComplexity)
@@ -19,13 +30,16 @@ namespace BlazorSudoku.Techniques
                     var coloring = new Dictionary<SudokuCell, bool>();
                     ColorBi(start, value, coloring);
 
+                    // check if we should continue
+                    if (coloring.Count > maxChainLength)
+                        continue;
 
 
                     foreach (var c in coloring.Keys)
                         if (!c.PossibleValues.Contains(value))
                             throw new Exception();
 
-                    var move = new SudokuMove($"Single Color on {value+1}",coloring.Count*4);
+                    var move = new SudokuMove($"Single Color on {value+1}",Math.Max(MinComplexity,coloring.Count*10));
 
                     if (move.Complexity > complexityLimit)
                         continue;

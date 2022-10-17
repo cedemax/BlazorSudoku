@@ -1,8 +1,30 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
 <PageTitle>Sudoku</PageTitle>
+<div class="popup d-flex">
+    <div class="form-group">
+        <select class="form-control" @onchange="Generate">
+            <option disabled selected>Generate a sudoku</option>
+            @foreach (var generator in SudokuGenerator.GetAllGenerators())
+            {
+                <option>@generator.GetType().Name</option>
+            }
+        </select>
+    </div>
+
+</div>
 <BlazorSudoku.SudokuGame sudoku="@sudoku" @ref="game"></BlazorSudoku.SudokuGame>
 @code{
     private BlazorSudoku.SudokuGame game;
     private Sudoku sudoku = Sudoku.StandardNxN(3);
+
+    private void Generate(ChangeEventArgs changeEvent)
+    {
+        var val = (string)changeEvent.Value;
+        var generator = SudokuGenerator.GetAllGenerators().First(x => x.GetType().Name == val);
+        var moves = generator.GetMoves(sudoku);
+        foreach (var move in moves)
+            move.Perform(sudoku);
+        game.Step();
+    }
 }

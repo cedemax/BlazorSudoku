@@ -5,7 +5,22 @@ namespace BlazorSudoku.Techniques
 {
     public class Fish : SudokuTechnique
     {
-        public override int MinComplexity => 16;
+        private readonly int maxGroupSize;
+        private readonly bool allowFins;
+        private readonly bool allowMutant;
+
+        public Fish() { maxGroupSize = 4; allowFins = true; allowMutant = true; }
+        public Fish(int maxGroupSize,bool fins,bool nonColRow)
+        {
+            if (maxGroupSize < 2)
+                throw new ArgumentOutOfRangeException(nameof(maxGroupSize));
+            this.maxGroupSize = maxGroupSize;
+            this.maxGroupSize = maxGroupSize;
+            this.allowFins = fins;
+            this.allowMutant = nonColRow;
+        }
+
+        public override int MinComplexity => 60;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
@@ -16,7 +31,7 @@ namespace BlazorSudoku.Techniques
             var viableDomains = sudoku.UnsetDomains.Where(x => x.Set.Count > 0).ToArray();
 
             var remainingDigits = sudoku.UnsetDomains.SelectMany(x => x.Unset).ToHashSet();
-            for (var n = 2; n <= 4; ++n)
+            for (var n = 2; n <= maxGroupSize; ++n)
             {
                 counts[n] = 0;
                 bcounts[n] = 0;
@@ -25,7 +40,7 @@ namespace BlazorSudoku.Techniques
             foreach (var fishDigit in remainingDigits)
             {
                 var digitViableDomains = viableDomains.Where(x => x.Unset.Contains(fishDigit)).ToArray();
-                for (var n = 2; n <= 4; ++n)
+                for (var n = 2; n <= maxGroupSize; ++n)
                 {
                     var complexity = GetComplexity(n, 0, 0);
                     if (complexityLimit < complexity)
@@ -72,6 +87,11 @@ namespace BlazorSudoku.Techniques
                             //    continue;
 
                             var nonColRow = bases.Concat(covers).Count(x => !x.IsColOrRow);
+
+                            // check if we should continue or not
+                            if (!allowMutant && nonColRow > 0)
+                                continue;
+
                             // update complexity check
                             complexity = GetComplexity(n, nonColRow, 0);
                             if (complexityLimit < complexity)
@@ -92,11 +112,14 @@ namespace BlazorSudoku.Techniques
                             for (var i = 0; i < baseCandidatesCount; ++i)
                                 if (!AnyRefIntersects(baseCandidates[i].Domains, covers))
                                     fins[finCount++] = baseCandidates[i];
+                            
+                            // check if we should continue or not
+                            if (!allowFins && finCount > 0)
+                                continue;
 
                             // unrealistic number of fins
                             if (finCount > 3)
                                 continue;
-
 
                             if (finCount > 0)
                             {
@@ -172,7 +195,7 @@ namespace BlazorSudoku.Techniques
             return false;
         }
 
-        private int GetComplexity(int n, int nonColRow, int fins) => (int)Math.Round(4 * n * n * (1 + Math.Sqrt(nonColRow)) * (1 + Math.Sqrt(fins)));
+        private int GetComplexity(int n, int nonColRow, int fins) => (int)Math.Round((n * n) * (1 + Math.Sqrt(nonColRow)) * (1 + Math.Sqrt(fins)))* MinComplexity/4;
 
         private string GetName(int n,int nonColRow,int fins)
         {

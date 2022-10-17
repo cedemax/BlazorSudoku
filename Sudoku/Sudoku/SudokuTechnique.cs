@@ -69,7 +69,12 @@ namespace BlazorSudoku
 
         public static SudokuTechnique[] GetAllTechiques()
         {
-            return Assembly.GetExecutingAssembly().GetTypes().Where(x => !x.IsAbstract && (x.BaseType == typeof(SudokuTechnique) || x.BaseType.BaseType == typeof(SudokuTechnique))).Select(x => Activator.CreateInstance(x) as SudokuTechnique).ToArray();
+            return Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x =>  
+                    !x.IsAbstract && 
+                    (x.BaseType != typeof(SudokuGenerator)) &&
+                    (x.BaseType == typeof(SudokuTechnique) || x.BaseType!.BaseType == typeof(SudokuTechnique))
+                ).Select(x => Activator.CreateInstance(x) as SudokuTechnique).ToArray()!;
         }
     }
 }

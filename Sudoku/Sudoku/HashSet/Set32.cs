@@ -57,6 +57,15 @@ namespace BlazorSudoku
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Is(int item)
+        {
+#if DEBUG
+            if (item > MaximumSize) throw new ArgumentOutOfRangeException($"Can't add value {item} to fixed size set");
+#endif
+            return flags == (1u<<item);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(int item)
         {
 #if DEBUG
@@ -98,7 +107,7 @@ namespace BlazorSudoku
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsSet(int n) => (flags & (1 << n)) > 0;
+        private bool IsSet(int n) => (flags & (1u << n)) > 0;
 
 
         public void RemoveWhere(Func<int, bool> b)

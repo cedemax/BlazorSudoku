@@ -18,7 +18,7 @@ namespace BlazorSudoku.Techniques
         {
             var ret = new List<SudokuMove>();
             if (techs.Count == 0)
-                techs = GetAllTechiques().Where(x => x is not Solver && x is not Simple).OrderBy(x => x.MinComplexity).ToList();
+                techs = GetAllTechiques().Where(x => x is not Solver && x is not Beginner && x is not DirectEliminationNoMarks).OrderBy(x => x.MinComplexity).ToList();
 
             foreach(var solver in techs)
             {

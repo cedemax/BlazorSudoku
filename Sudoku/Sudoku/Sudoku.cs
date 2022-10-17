@@ -181,9 +181,12 @@ namespace BlazorSudoku
             //Solve();
         }
 
-        public int Grade(out string moveList,out Sudoku solution)
+        public int Grade(out string moveList,SudokuTechnique[]? techniques,out Sudoku solution)
         {
-            var solver = new Solver(SudokuTechnique.GetAllTechiques().Where(x => x is not Solver && x is not SelectOnlies && x is not Simple).OrderBy(x => x.MinComplexity).ToList());
+            techniques ??= SudokuTechnique.GetAllTechiques();
+            var solver = new Solver(techniques
+                .Where(x => x is not Solver && x is not SelectOnlies && x is not SudokuGenerator)
+                .OrderBy(x => x.MinComplexity).ToList());
             var sudoku = Clone();
             var hardestMove = 0;
             var moves = new List<SudokuMove>();
@@ -204,7 +207,7 @@ namespace BlazorSudoku
                 moves.Add(move);
             }
 
-            var grade = hardestMove * (2 - Math.Exp(-moves.Sum(x => Math.Sqrt(Math.Max(1,x.Complexity-1)))/10));
+            var grade = moves.OrderByDescending(x => x.Complexity).Select((x,i) => x.Complexity/Math.Pow(i+1,1.5)).Sum();
 
             var prev = "";
             var prevs = 0;

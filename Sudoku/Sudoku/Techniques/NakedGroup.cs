@@ -4,12 +4,23 @@ namespace BlazorSudoku.Techniques
 {
     public class NakedGroup : SudokuTechnique
     {
-        public override int MinComplexity => 4;
+        private readonly int maxGroupSize;
+
+        public NakedGroup() { maxGroupSize = 5; }
+        public NakedGroup(int maxGroupSize)
+        {
+            if (maxGroupSize < 2)
+                throw new ArgumentOutOfRangeException(nameof(maxGroupSize));
+            this.maxGroupSize = maxGroupSize;
+        }
+
+
+        public override int MinComplexity => 20;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            for (var n = 2; n < 5; ++n)
+            for (var n = 2; n < maxGroupSize; ++n)
             {
                 if (GetComplexity(n) < MinComplexity)
                     return moves;
@@ -47,7 +58,7 @@ namespace BlazorSudoku.Techniques
             return moves;
         }
 
-        private int GetComplexity(int n) => n * n;
+        private int GetComplexity(int n) => (n * n)* MinComplexity / 4;
 
         private string GetName(int n)
         {

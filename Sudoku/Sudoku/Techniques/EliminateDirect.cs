@@ -4,7 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class EliminateDirect : SudokuTechnique
     {
-        public override int MinComplexity => 1;
+        public override int MinComplexity => 4;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             if (complexityLimit < MinComplexity)
@@ -14,7 +14,7 @@ namespace BlazorSudoku.Techniques
             var moves = new List<SudokuMove>();
             foreach (var domain in sudoku.UnsetDomains)
             {
-                var move = new SudokuMove("Direct elimination",1);
+                var move = new SudokuMove("Direct elimination", MinComplexity);
                 foreach (var cell in domain.UnsetCells)
                 {
                     foreach (var toRemove in domain.Set)

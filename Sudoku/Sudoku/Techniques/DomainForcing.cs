@@ -4,7 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class DomainForcing : SudokuTechnique
     {
-        public override int MinComplexity => 5;
+        public override int MinComplexity => 10;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
         {
             if (complexityLimit < MinComplexity)
@@ -27,7 +27,7 @@ namespace BlazorSudoku.Techniques
                         var valuesAnotB = cellsAnotB.SelectMany(x => x.PossibleValues).ToHashSet();
                         var valuesBnotA = cellsBnotA.SelectMany(x => x.PossibleValues).ToHashSet();
 
-                        var move = new SudokuMove("Domain forcing",5);
+                        var move = new SudokuMove("Domain forcing", MinComplexity);
 
                         foreach (var value in valuesAB)
                         {

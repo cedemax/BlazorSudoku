@@ -1,4 +1,6 @@
 ﻿using Sudoku.Sudoku.Events;
+using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace BlazorSudoku
 {
@@ -12,7 +14,7 @@ namespace BlazorSudoku
         /// A unique ID
         /// </summary>
         public int Key { get; }
-
+        public Sudoku Sudoku { get; }
 
         public HashSet<SudokuCell> UnsetCells { get; private set; } = new HashSet<SudokuCell>();
         public HashSet<SudokuCell> SetCells { get; private set; } = new HashSet<SudokuCell>();
@@ -36,10 +38,11 @@ namespace BlazorSudoku
         /// </summary>
         public event EventHandler<SudokuDomainEventArgs>? DomainBecameUnSet;
 
-        public SudokuDomain(HashSet<SudokuCell> cells,int key)
+        public SudokuDomain(HashSet<SudokuCell> cells,int key,Sudoku sudoku)
         {
             Cells = cells;
             Key = key;
+            Sudoku = sudoku;
             IsRow = cells.Select(x => x.Y).Distinct().Count() == 1;
             IsCol = cells.Select(x => x.X).Distinct().Count() == 1;
 
@@ -56,7 +59,12 @@ namespace BlazorSudoku
 
         public void Init()
         {
-            IntersectingDomains = Cells.SelectMany(x => x.Domains).Where(x => x != this && x.Cells.Intersect(Cells).Any()).ToHashSet();
+            var refs = new BitArray(Sudoku.Domains.Length);
+            foreach (var cell in Cells)
+                refs.Or(cell.DomainRefs);
+            refs.Set(Key, false);
+            IntersectingDomains = Sudoku.GetDomains(refs).ToHashSet();
+
             IntersectingUnsetDomains = IntersectingDomains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
 
             foreach(var intersectingUnsetDomain in IntersectingUnsetDomains)

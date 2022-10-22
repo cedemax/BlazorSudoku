@@ -1,4 +1,5 @@
 ﻿using Sudoku.Sudoku.Events;
+using System.Collections;
 
 namespace BlazorSudoku
 {
@@ -14,6 +15,7 @@ namespace BlazorSudoku
         /// A unique ID
         /// </summary>
         public int Key { get; }
+        public Sudoku Sudoku { get; }
 
 
         /// <summary>
@@ -42,7 +44,15 @@ namespace BlazorSudoku
         /// </summary>
         public uint PID => PossibleValues.Flag;
 
-        public HashSet<SudokuDomain> Domains { get; } = new HashSet<SudokuDomain>();
+        /// <summary>
+        /// The domain references, for faster booleans
+        /// </summary>
+        public BitArray DomainRefs { get; }
+
+        /// <summary>
+        /// The domains this cell belongs to
+        /// </summary>
+        public List<SudokuDomain> Domains { get; }
 
         /// <summary>
         /// Lazy loading
@@ -67,13 +77,17 @@ namespace BlazorSudoku
         public int TopBorder => GetBorder(2);
         public int BottomBorder => GetBorder(3);
 
-        public SudokuCell(int x,int y, int key)
+        public SudokuCell(int x,int y, int key,Sudoku sudoku, int domainCount)
         {
             X = x;
             Y = y;
 
             PossibleValues = Set32.Empty;
             Key = key;
+            Sudoku = sudoku;
+
+            DomainRefs = new BitArray(domainCount);
+            Domains = new List<SudokuDomain>();
         }
         /// <summary>
         /// Other Cells that are visible from this cell
@@ -87,6 +101,14 @@ namespace BlazorSudoku
 
         public void Init()
         {
+            foreach (var domain in Sudoku.Domains)
+                if (domain.Cells.Contains(this))
+                {
+                    Domains.Add(domain);
+                    DomainRefs[domain.Key] = true;
+                }
+
+
             Visible = Domains.SelectMany(x => x.Cells).Where(x => x != this).ToHashSet();
             VisibleUnset = Visible.Where(x => x.IsUnset).ToHashSet();
             foreach (var cell in VisibleUnset)

@@ -10,7 +10,7 @@ namespace BlazorSudoku
         public string Name { get; set; }
 
         public SudokuCell[] Cells { get; }
-        public HashSet<SudokuCell> UnsetCells { get; }
+        public BARefSet<SudokuCell> UnsetCells { get; }
 
         public SudokuDomain[] Domains { get; }
 
@@ -88,16 +88,16 @@ namespace BlazorSudoku
 
         public Sudoku(SudokuCellData[] cellDatas, SudokuDomainData[] domainDatas, string? name = null)
         {
-            var cells = cellDatas.Select((x, i) => new SudokuCell(x.X, x.Y, i, this,domainDatas.Length)).ToArray();
+            var cells = cellDatas.Select((x, i) => new SudokuCell(x.X, x.Y, i, this,domainDatas.Length,cellDatas.Length)).ToArray();
             var domains = domainDatas.Select((x, i) => new SudokuDomain(x.CellIndices.Select(y => cells[y]).ToHashSet(), i,this)).ToArray();
 
             for(var i = 0; i < cells.Length; ++i)
             {
                 if (cellDatas[i].Value != null)
-                    cells[i].SetValue(cellDatas[i].Value.Value, true);
+                    cells[i].SetValue(cellDatas[i].Value!.Value, true);
 
                 if (cellDatas[i].Options != null && cells[i].Value == null)
-                    cells[i].SetOptions(cellDatas[i].Options, true);
+                    cells[i].SetOptions(cellDatas[i].Options!, true);
             }
 
             Name = name ?? "Sudoku";
@@ -115,13 +115,18 @@ namespace BlazorSudoku
                 throw new ArgumentException("All domains must have same size");
 
             Cells = cells;
+            UnsetCells = new BARefSet<SudokuCell>(cellDatas.Length);
 
             Domains = domains;
             foreach (var cell in Cells)
+            {
                 if (!cell.Value.HasValue && cell.PossibleValues.Count == 0)
                     cell.SetOptions(Enumerable.Range(0, N), true);
 
-            UnsetCells = Cells.Where(x => x.IsUnset).ToHashSet();
+                if (cell.IsUnset)
+                    UnsetCells.Add(cell);
+            }
+
             UnsetDomains = Domains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
 
             foreach (var cell in Cells)
@@ -286,7 +291,7 @@ namespace BlazorSudoku
             }
         }
 
-        public bool IsSolved => UnsetCells.Count == 0;
+        public bool IsSolved => UnsetCells.IsAllFalse();
         public Sudoku Clone(bool options = true)
         {
             return Parse(Serialize(options));

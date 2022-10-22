@@ -1,10 +1,11 @@
 ﻿using Sudoku.Sudoku.Events;
+using Sudoku.Sudoku.HashSet;
 using System.Collections;
 using System.Text.RegularExpressions;
 
 namespace BlazorSudoku
 {
-    public class SudokuDomain
+    public class SudokuDomain : WithID
     {
         public HashSet<SudokuCell> Cells { get; }
 
@@ -59,9 +60,9 @@ namespace BlazorSudoku
 
         public void Init()
         {
-            var refs = new BitArray(Sudoku.Domains.Length);
+            var refs = BAPool.Get(Sudoku.Domains.Length,true);
             foreach (var cell in Cells)
-                refs.Or(cell.DomainRefs);
+                refs.Or(cell.Domains.Refs);
             refs.Set(Key, false);
             IntersectingDomains = Sudoku.GetDomains(refs).ToHashSet();
 

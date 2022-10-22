@@ -7,7 +7,7 @@
 
         protected override IEnumerable<SudokuChainNode> Starts(Sudoku sudoku)
         {
-            foreach (var start in sudoku.UnsetCells)
+            foreach (var start in sudoku.GetCells(sudoku.UnsetCells))
             {
                 var options = start.PossibleValues.Select(x => new SudokuCellOption(start, x)).ToArray();
                 // internal strong link

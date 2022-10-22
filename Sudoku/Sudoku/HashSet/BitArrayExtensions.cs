@@ -16,7 +16,15 @@ namespace BlazorSudoku
         /// <param name="sudoku"></param>
         /// <param name="refs"></param>
         /// <returns></returns>
-        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku,BitArray refs)
+        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku, BA refs) => GetDomains(sudoku, refs.Refs);
+
+        /// <summary>
+        /// Returns the domains based on the references
+        /// </summary>
+        /// <param name="sudoku"></param>
+        /// <param name="refs"></param>
+        /// <returns></returns>
+        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku, BitArray refs)
         {
             for (var i = 0; i < refs.Count; ++i)
                 if (refs[i])
@@ -29,11 +37,27 @@ namespace BlazorSudoku
         /// <param name="sudoku"></param>
         /// <param name="refs"></param>
         /// <returns></returns>
+        public static IEnumerable<SudokuCell> GetCells(this Sudoku sudoku, BA refs) => GetCells(sudoku, refs.Refs);
+
+        /// <summary>
+        /// Returns the domains based on the references
+        /// </summary>
+        /// <param name="sudoku"></param>
+        /// <param name="refs"></param>
+        /// <returns></returns>
         public static IEnumerable<SudokuCell> GetCells(this Sudoku sudoku, BitArray refs)
         {
             for (var i = 0; i < refs.Count; ++i)
                 if (refs[i])
                     yield return sudoku.Cells[i];
+        }
+
+        public static bool IsAllFalse(this BA refs)
+        {
+            for (var i = 0; i < refs.Refs.Count; ++i)
+                if (refs.Refs[i])
+                    return false;
+            return true;
         }
     }
 }

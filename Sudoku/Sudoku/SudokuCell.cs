@@ -1,9 +1,10 @@
-﻿using Sudoku.Sudoku.Events;
+﻿using Sudoku.Sudoku;
+using Sudoku.Sudoku.Events;
 using System.Collections;
 
 namespace BlazorSudoku
 {
-    public class SudokuCell
+    public class SudokuCell : WithID
     {
         public int X { get; }
         public int Y { get; }
@@ -45,14 +46,14 @@ namespace BlazorSudoku
         public uint PID => PossibleValues.Flag;
 
         /// <summary>
-        /// The domain references, for faster booleans
-        /// </summary>
-        public BitArray DomainRefs { get; }
-
-        /// <summary>
         /// The domains this cell belongs to
         /// </summary>
-        public List<SudokuDomain> Domains { get; }
+        public BASet<SudokuDomain> Domains { get; }
+
+        /// <summary>
+        /// Other Cells that are visible from this cell
+        /// </summary>
+        public BASet<SudokuCell> Visible { get; }
 
         /// <summary>
         /// Lazy loading
@@ -77,7 +78,7 @@ namespace BlazorSudoku
         public int TopBorder => GetBorder(2);
         public int BottomBorder => GetBorder(3);
 
-        public SudokuCell(int x,int y, int key,Sudoku sudoku, int domainCount)
+        public SudokuCell(int x,int y, int key,Sudoku sudoku, int domainCount, int cellCount)
         {
             X = x;
             Y = y;
@@ -86,42 +87,40 @@ namespace BlazorSudoku
             Key = key;
             Sudoku = sudoku;
 
-            DomainRefs = new BitArray(domainCount);
-            Domains = new List<SudokuDomain>();
-        }
-        /// <summary>
-        /// Other Cells that are visible from this cell
-        /// </summary>
-        public HashSet<SudokuCell> Visible { get; private set; } = new HashSet<SudokuCell>();
+            Domains = new (domainCount);
+            Visible = new (cellCount);
 
-        /// <summary>
-        /// Unset Cells that are visible from this cell
-        /// </summary>
-        public HashSet<SudokuCell> VisibleUnset { get; private set; } = new HashSet<SudokuCell>();
+        }
 
         public void Init()
         {
             foreach (var domain in Sudoku.Domains)
+            {
                 if (domain.Cells.Contains(this))
                 {
                     Domains.Add(domain);
-                    DomainRefs[domain.Key] = true;
+                    foreach (var cell in domain.Cells)
+                        if (cell != this)
+                            Visible.Add(cell);
                 }
 
-
-            Visible = Domains.SelectMany(x => x.Cells).Where(x => x != this).ToHashSet();
-            VisibleUnset = Visible.Where(x => x.IsUnset).ToHashSet();
-            foreach (var cell in VisibleUnset)
-                cell.CellBecameSet += (sender, args) => { VisibleUnset.Remove(args.Cell); };
+               
+            }
         }
 
         public bool Sees(SudokuCell other) => Visible.Contains(other);
+
+        /// <summary>
+        /// The cells seen by this cell that are unset
+        /// </summary>
+        public IEnumerable<SudokuCell> VisibleUnset => Visible.Where(Sudoku.UnsetCells);
 
 
         public IEnumerable<SudokuCell> ConjugatePairs(int val)
         {
             if(IsSet || !PossibleValues.Contains(val))
                 return Enumerable.Empty<SudokuCell>();
+
 
             return VisibleUnset.Where(x =>
                 x.PossibleValues.Contains(val) &&

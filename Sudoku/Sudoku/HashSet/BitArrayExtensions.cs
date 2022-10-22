@@ -52,6 +52,5 @@ namespace BlazorSudoku
                     yield return sudoku.Cells[i];
         }
 
-        
     }
 }

@@ -30,7 +30,7 @@ namespace BlazorSudoku
         public Set32 Unset { get; private set; }
         public Set32 Set { get; private set; }
 
-        public HashSet<SudokuDomain> IntersectingDomains { get; private set; } = new HashSet<SudokuDomain>();
+        public BASet<SudokuDomain> IntersectingDomains { get; }
         public HashSet<SudokuDomain> IntersectingUnsetDomains { get; private set; } = new HashSet<SudokuDomain>();
 
         /// <summary>
@@ -52,6 +52,7 @@ namespace BlazorSudoku
             Cells = new BASet<SudokuCell>(cellCount);
             UnsetCellRefs = new BARefSet<SudokuCell>(cellCount);
             SetCellRefs = new BARefSet<SudokuCell>(cellCount);
+            IntersectingDomains = new BASet<SudokuDomain>(domainCount);
 
             foreach (var cell in cells)
                 Cells.Add(cell);
@@ -74,11 +75,8 @@ namespace BlazorSudoku
 
         public void Init()
         {
-            var refs = BAPool.Get(Sudoku.Domains.Length, true);
-            foreach (var cell in Cells)
-                refs.Or(cell.Domains.Refs);
-            refs.Set(Key, false);
-            IntersectingDomains = Sudoku.GetDomains(refs).ToHashSet();
+            foreach (var domain in Sudoku.GetDomains(Cells.Select(x => x.Domains).Union().Without(this)))
+                IntersectingDomains.Add(domain);
 
             IntersectingUnsetDomains = IntersectingDomains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
 

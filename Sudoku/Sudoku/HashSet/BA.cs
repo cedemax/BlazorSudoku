@@ -8,8 +8,6 @@ namespace BlazorSudoku
 
         public BA(int capacity) { Refs = new BitArray(capacity); }
 
-
-
         public bool IsAllFalse()
         {
             for (var i = 0; i < Refs.Count; ++i)
@@ -17,7 +15,6 @@ namespace BlazorSudoku
                     return false;
             return true;
         }
-
 
         public BARefSet<T> Intersect(BA<T> other)
         {
@@ -43,5 +40,19 @@ namespace BlazorSudoku
             return set;
         }
 
+        public BARefSet<T> With(T other)
+        {
+            var set = new BARefSet<T>(Refs.Count);
+            set.Refs.Or(Refs);
+            set.Refs.Set(other.Key, true);
+            return set;
+        }
+        public BARefSet<T> Without(T other)
+        {
+            var set = new BARefSet<T>(Refs.Count);
+            set.Refs.Or(Refs);
+            set.Refs.Set(other.Key, false);
+            return set;
+        }
     }
 }

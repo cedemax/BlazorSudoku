@@ -113,7 +113,7 @@ namespace BlazorSudoku
         /// <summary>
         /// The cells seen by this cell that are unset
         /// </summary>
-        public IEnumerable<SudokuCell> VisibleUnset => Visible.Where(Sudoku.UnsetCells);
+        public IEnumerable<SudokuCell> VisibleUnset => Visible.Where(Sudoku.UnsetCellRefs);
 
 
         public IEnumerable<SudokuCell> ConjugatePairs(int val)

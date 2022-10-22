@@ -10,7 +10,9 @@ namespace BlazorSudoku
         public string Name { get; set; }
 
         public SudokuCell[] Cells { get; }
-        public BARefSet<SudokuCell> UnsetCells { get; }
+        public BARefSet<SudokuCell> UnsetCellRefs { get; }
+
+        public IEnumerable<SudokuCell> UnsetCells => this.GetCells(UnsetCellRefs);
 
         public SudokuDomain[] Domains { get; }
 
@@ -115,7 +117,7 @@ namespace BlazorSudoku
                 throw new ArgumentException("All domains must have same size");
 
             Cells = cells;
-            UnsetCells = new BARefSet<SudokuCell>(cellDatas.Length);
+            UnsetCellRefs = new BARefSet<SudokuCell>(cellDatas.Length);
 
             Domains = domains;
             foreach (var cell in Cells)
@@ -124,7 +126,7 @@ namespace BlazorSudoku
                     cell.SetOptions(Enumerable.Range(0, N), true);
 
                 if (cell.IsUnset)
-                    UnsetCells.Add(cell);
+                    UnsetCellRefs.Add(cell);
             }
 
             UnsetDomains = Domains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
@@ -156,8 +158,8 @@ namespace BlazorSudoku
 
             foreach (var cell in Cells)
             {
-                cell.CellBecameSet += (sender, args) => { UnsetCells.Remove(args.Cell); };
-                cell.CellBecameUnSet += (sender, args) => { UnsetCells.Add(args.Cell); };
+                cell.CellBecameSet += (sender, args) => { UnsetCellRefs.Remove(args.Cell); };
+                cell.CellBecameUnSet += (sender, args) => { UnsetCellRefs.Add(args.Cell); };
             }
             foreach (var domain in Domains)
             {
@@ -291,7 +293,7 @@ namespace BlazorSudoku
             }
         }
 
-        public bool IsSolved => UnsetCells.IsAllFalse();
+        public bool IsSolved => UnsetCellRefs.IsAllFalse();
         public Sudoku Clone(bool options = true)
         {
             return Parse(Serialize(options));

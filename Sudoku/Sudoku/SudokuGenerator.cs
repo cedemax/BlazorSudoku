@@ -25,7 +25,7 @@ namespace BlazorSudoku
                     }
                     else
                     {
-                        var randomCell = solution.GetCells(solution.UnsetCells).GetRandom();
+                        var randomCell = solution.UnsetCells.GetRandom();
                         randomCell.SetValue(randomCell.PossibleValues.GetRandom());
 
                         workingSet = solution;

@@ -12,7 +12,7 @@ namespace BlazorSudoku.Techniques
 
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            foreach (var cell1 in sudoku.GetCells(sudoku.UnsetCells).Where(x => x.PossibleValues.Count == 2))
+            foreach (var cell1 in sudoku.UnsetCells.Where(x => x.PossibleValues.Count == 2))
             {
                 foreach (var domain in cell1.Domains)
                 {

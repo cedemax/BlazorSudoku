@@ -14,7 +14,7 @@ namespace BlazorSudoku.Techniques
             for (var n = 0; n < sudoku.N; ++n)
             {
                 var done = new HashSet<(SudokuCell cell, int n)>();
-                var starts = sudoku.GetCells(sudoku.UnsetCells).Where(x => x.ConjugatePairs(n).Any());
+                var starts = sudoku.UnsetCells.Where(x => x.ConjugatePairs(n).Any());
                 var color = 1;
                 var coloring = new Dictionary<SudokuCell, int>();
                 foreach (var start in starts)

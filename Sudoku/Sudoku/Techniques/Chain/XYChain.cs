@@ -8,7 +8,7 @@ namespace BlazorSudoku.Techniques
 
         protected override IEnumerable<SudokuChainNode> Starts(Sudoku sudoku)
         {
-            foreach(var start in sudoku.GetCells(sudoku.UnsetCells).Where(x => x.PossibleValues.Count == 2))
+            foreach(var start in sudoku.UnsetCells.Where(x => x.PossibleValues.Count == 2))
             {
                 var options = start.PossibleValues.Select(x => new SudokuCellOption(start, x)).ToArray();
                 foreach (var value in start.PossibleValues)
@@ -34,7 +34,7 @@ namespace BlazorSudoku.Techniques
             var chainEnd = node.Last;
             if (chainStart.Value != chainEnd.Value)
                 return null;   // requirement for XY-chain
-            var eliminate = sudoku.GetCells(sudoku.UnsetCells)
+            var eliminate = sudoku.UnsetCells
                 .Where(x =>
                 x.PossibleValues.Contains(chainStart.Value) &&
                 x.Sees(chainStart.Cell) &&

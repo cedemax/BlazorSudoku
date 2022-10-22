@@ -22,7 +22,7 @@ namespace BlazorSudoku.Techniques
 
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
-            var starts = sudoku.GetCells(sudoku.UnsetCells).Where(x => x.ConjugatePairs().Any()).GroupBy(x => x.PID).Select(x => x.First()).ToArray();
+            var starts = sudoku.UnsetCells.Where(x => x.ConjugatePairs().Any()).GroupBy(x => x.PID).Select(x => x.First()).ToArray();
             foreach (var start in starts)
             {
                 foreach (var value in start.PossibleValues)
@@ -43,7 +43,7 @@ namespace BlazorSudoku.Techniques
                     if (move.Complexity > complexityLimit)
                         continue;
 
-                    foreach (var cell in sudoku.GetCells(sudoku.UnsetCells))
+                    foreach (var cell in sudoku.UnsetCells)
                     {
                         if (cell.PossibleValues.Contains(value))
                         {

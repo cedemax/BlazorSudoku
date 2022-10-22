@@ -23,8 +23,7 @@ namespace BlazorSudoku.Techniques
                 foreach (var value in domain.IntersectingDomains.Select(x => x.Set).Union().Intersect(domain.Unset))
                 {
                     // check if we can restrict this value in this domain to a single cell
-
-                    var freeCellRefs = domain.Cells.Except(domain.IntersectingDomains.Where(x => x.Set.Contains(value)).Select(x => x.Cells).Union());
+                    var freeCellRefs = domain.UnsetCellRefs.Except(domain.IntersectingDomains.Where(x => x.Set.Contains(value)).Select(x => x.Cells).Union());
                     if (freeCellRefs.CountTrue() == 1)
                     {
                         var freeCell = sudoku.GetCells(freeCellRefs).First();

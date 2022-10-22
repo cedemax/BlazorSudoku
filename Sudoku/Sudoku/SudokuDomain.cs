@@ -31,7 +31,6 @@ namespace BlazorSudoku
         public Set32 Set { get; private set; }
 
         public BASet<SudokuDomain> IntersectingDomains { get; }
-        public HashSet<SudokuDomain> IntersectingUnsetDomains { get; private set; } = new HashSet<SudokuDomain>();
 
         /// <summary>
         /// The domains possible values changed, but the cell did not become set
@@ -77,14 +76,6 @@ namespace BlazorSudoku
         {
             foreach (var domain in Sudoku.GetDomains(Cells.Select(x => x.Domains).Union().Without(this)))
                 IntersectingDomains.Add(domain);
-
-            IntersectingUnsetDomains = IntersectingDomains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
-
-            foreach (var intersectingDomain in IntersectingDomains)
-            {
-                intersectingDomain.DomainBecameSet += (sender, args) => { IntersectingUnsetDomains.Remove(intersectingDomain); };
-                intersectingDomain.DomainBecameUnSet += (sender, args) => { IntersectingUnsetDomains.Add(intersectingDomain); };
-            }
 
             Unset = Set32.All(Sudoku.N);
             Set = Set32.Empty;

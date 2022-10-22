@@ -14,7 +14,7 @@ namespace BlazorSudoku.Techniques
             var moves = new List<SudokuMove>();
             foreach (var domainA in sudoku.UnsetDomains)
             {
-                foreach (var domainB in domainA.IntersectingUnsetDomains)
+                foreach (var domainB in sudoku.GetDomains(domainA.IntersectingDomains.Intersect(sudoku.UnsetDomainRefs)))
                 {
                     var cellsAB = sudoku.DomainIntersections[(domainA,domainB)];
                     var cellsAnotB = sudoku.DomainExceptions[(domainA, domainB)];

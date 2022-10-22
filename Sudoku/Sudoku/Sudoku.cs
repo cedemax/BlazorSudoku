@@ -10,11 +10,10 @@ namespace BlazorSudoku
         public string Name { get; set; }
 
         public SudokuCell[] Cells { get; }
-        public BARefSet<SudokuCell> UnsetCellRefs { get; }
-
-        public IEnumerable<SudokuCell> UnsetCells => this.GetCells(UnsetCellRefs);
-
         public SudokuDomain[] Domains { get; }
+
+        public BARefSet<SudokuCell> UnsetCellRefs { get; }
+        public IEnumerable<SudokuCell> UnsetCells => this.GetCells(UnsetCellRefs);
 
         public BARefSet<SudokuDomain> UnsetDomainRefs { get; }
         public IEnumerable<SudokuDomain> UnsetDomains => this.GetDomains(UnsetDomainRefs);

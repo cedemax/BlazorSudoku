@@ -10,6 +10,11 @@ namespace BlazorSudoku
         public int? Value { get; private set; }
         public bool Error { get; set; }
 
+        /// <summary>
+        /// A unique ID
+        /// </summary>
+        public int Key { get; }
+
 
         /// <summary>
         /// The cells possible values changed, but the cell did not become set
@@ -37,9 +42,6 @@ namespace BlazorSudoku
         /// </summary>
         public uint PID => PossibleValues.Flag;
 
-        private readonly string key;
-        public string Key => key;
-
         public HashSet<SudokuDomain> Domains { get; } = new HashSet<SudokuDomain>();
 
         /// <summary>
@@ -65,13 +67,13 @@ namespace BlazorSudoku
         public int TopBorder => GetBorder(2);
         public int BottomBorder => GetBorder(3);
 
-        public SudokuCell(int x,int y)
+        public SudokuCell(int x,int y, int key)
         {
             X = x;
             Y = y;
 
             PossibleValues = Set32.Empty;
-            key = $"{x},{y}";
+            Key = key;
         }
         /// <summary>
         /// Other Cells that are visible from this cell

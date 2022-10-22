@@ -32,7 +32,7 @@ namespace BlazorSudoku
                 : Cells.Select(x => $"Cell {x.X},{x.Y},{x.Value?.ToString() ?? "-1"}").ToArray();
             var domains = Domains.Select(x => $"Domain {string.Join(",", x.Cells.Select(y => index[y]))}");
 
-            var sudoku = $"Sudoku {Name??"NoName"} {N} {Cells.Length} cells, {Domains.Length} domains\n" +
+            var sudoku = $"Sudoku {Name?.Replace(' ','_')??"NoName"} {N} {Cells.Length} {Domains.Length}\n" +
                 $"{string.Join("\n",cells)}\n" +
                 $"{string.Join("\n",domains)}";
 
@@ -41,44 +41,58 @@ namespace BlazorSudoku
 
         public static Sudoku Parse(string saved)
         {
-            var cells = new List<SudokuCell>();
-            var domains = new List<SudokuDomain>();
-            string name = "ParsedSudoku";
+
             var lines = saved.Split("\n");
-            foreach(var line in lines)
+            var header = lines[0].Split(' ');
+            if (header[0] != "Sudoku")
+                throw new InvalidDataException("Not a sudoku");
+
+            var name = header[1];
+            var N = int.Parse(header[2]);
+            var nCells = int.Parse(header[3]);
+            var nDomains = int.Parse(header[4]);
+
+            var cells = new SudokuCell[nCells];
+            var domains = new SudokuDomain[nDomains];
+            var cellCounter = 0;
+            var domainCounter = 0;
+
+            foreach (var line in lines.Skip(1))
             {
                 var lineType = line[..line.IndexOf(' ')];
                 switch (lineType.ToLowerInvariant())
                 {
-                    case "sudoku":
-                        var things = line.Split(' ').Skip(1).ToArray();
-                        name = things[0];
-                        break;
                     case "cell":
                         var vals = line.Split(' ').Last().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
-                        var cell = new SudokuCell(vals[0], vals[1]);
+                        var cell = new SudokuCell(vals[0], vals[1],cellCounter);
                         if (vals.Length >= 3 && vals[2] >= 0)
                             cell.SetValue(vals[2],true);
                         if(vals.Length >= 4 && !cell.Value.HasValue)
                             cell.SetOptions(vals.Skip(3),true);
-                        cells.Add(cell);
+                        cells[cellCounter++]=cell;
                         break;
                     case "domain":
                         var indices = line.Split(' ').Last().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
-                        var domain = new SudokuDomain(cells.Select((x, i) => (x, i)).Where(x => indices.Contains(x.i)).Select(x => x.x).ToHashSet());
-                        domains.Add(domain);
+                        var domainCells = cells.Select((x, i) => (x, i)).Where(x => indices.Contains(x.i)).Select(x => x.x).ToHashSet();
+                        var domain = new SudokuDomain(domainCells,domainCounter++);
+                        domains[domainCounter++]= domain;
                         break;
                 }
             }
-            return new Sudoku(cells.ToArray(), domains.ToArray())
-            {
-                Name = name,
-            };
+
+            if (domainCounter != nDomains)
+                throw new InvalidDataException("File did not contain enough domains");
+            if (cellCounter != nCells)
+                throw new InvalidDataException("File did not contain enough cells");
+
+            return new Sudoku(cells, domains, name);
         }
 
 
-        public Sudoku(SudokuCell[] cells, SudokuDomain[] domains)
+        public Sudoku(SudokuCell[] cells, SudokuDomain[] domains,string? name=null)
         {
+            Name = name ?? "Sudoku";
+
             if (cells.Select(x => (x.X, x.Y)).Distinct().Count() != cells.Length)
                 throw new ArgumentException("Invalid sudoku with overlapping cells");
 
@@ -274,16 +288,16 @@ namespace BlazorSudoku
         public static Sudoku StandardNxN(int n = 3)
         {
             var N = n * n;
-
-            var cells = Enumerable.Range(0, N).SelectMany(x => Enumerable.Range(0, N).Select(y => new SudokuCell(x, y))).ToArray();
+            var cellCounter = 0;
+            var domainCounter = 0;
+            var cells = Enumerable.Range(0, N).SelectMany(x => Enumerable.Range(0, N).Select(y => new SudokuCell(x, y,cellCounter++))).ToArray();
             var domains = new List<SudokuDomain>();
-
 
             for (var i = 0; i < N; i++)
             {
-                domains.Add(new SudokuDomain(cells.Where(x => x.X == i).ToHashSet()));  // columns
-                domains.Add(new SudokuDomain(cells.Where(x => x.Y == i).ToHashSet()));  // rows
-                domains.Add(new SudokuDomain(cells.Where(x => ((x.X / n) * n + (x.Y / n)) == i).ToHashSet()));  // squares
+                domains.Add(new SudokuDomain(cells.Where(x => x.X == i).ToHashSet(),domainCounter++));  // columns
+                domains.Add(new SudokuDomain(cells.Where(x => x.Y == i).ToHashSet(), domainCounter++));  // rows
+                domains.Add(new SudokuDomain(cells.Where(x => ((x.X / n) * n + (x.Y / n)) == i).ToHashSet(), domainCounter++));  // squares
             }
             return new Sudoku(cells, domains.ToArray());
         }

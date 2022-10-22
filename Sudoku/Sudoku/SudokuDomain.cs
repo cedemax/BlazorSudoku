@@ -8,6 +8,12 @@ namespace BlazorSudoku
 
         public bool Error { get; set; }
 
+        /// <summary>
+        /// A unique ID
+        /// </summary>
+        public int Key { get; }
+
+
         public HashSet<SudokuCell> UnsetCells { get; private set; } = new HashSet<SudokuCell>();
         public HashSet<SudokuCell> SetCells { get; private set; } = new HashSet<SudokuCell>();
         public Set32 Unset { get; private set; }
@@ -15,8 +21,6 @@ namespace BlazorSudoku
 
         public HashSet<SudokuDomain> IntersectingDomains { get; private set; } = new HashSet<SudokuDomain>();
         public HashSet<SudokuDomain> IntersectingUnsetDomains { get; private set; } = new HashSet<SudokuDomain>();
-
-        public string Name { get; }
 
         /// <summary>
         /// The domains possible values changed, but the cell did not become set
@@ -30,11 +34,12 @@ namespace BlazorSudoku
         /// <summary>
         /// The domains possible values were changed
         /// </summary>
-        public event EventHandler<SudokuDomainEventArgs> DomainBecameUnSet;
+        public event EventHandler<SudokuDomainEventArgs>? DomainBecameUnSet;
 
-        public SudokuDomain(HashSet<SudokuCell> cells,string? name = null)
+        public SudokuDomain(HashSet<SudokuCell> cells,int key)
         {
             Cells = cells;
+            Key = key;
             IsRow = cells.Select(x => x.Y).Distinct().Count() == 1;
             IsCol = cells.Select(x => x.X).Distinct().Count() == 1;
 
@@ -47,8 +52,6 @@ namespace BlazorSudoku
 
             Unset = Set32.Empty;
             Set = Set32.Empty;
-
-            Name = name??ToString();
         }
 
         public void Init()
@@ -119,8 +122,6 @@ namespace BlazorSudoku
 
         public override string ToString()
         {
-            if(Name != null)
-                return Name;
             if (IsCol)
                 return $"Col {Cells.First().X}";
             if (IsRow)

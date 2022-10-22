@@ -14,11 +14,8 @@ namespace BlazorSudoku.Techniques
 
             var moves = new List<SudokuMove>();
 
-            foreach (var domain in sudoku.UnsetDomains)
+            foreach (var domain in sudoku.Domains.Where(x => x.Set.Count < (sudoku.N-1)))
             {
-                if (domain.UnsetCellRefs.CountTrue() <= 1)
-                    continue;
-
                 // only check those values that are set in some intersecting domain. 
                 foreach (var value in domain.IntersectingDomains.Select(x => x.Set).Union().Intersect(domain.Unset))
                 {

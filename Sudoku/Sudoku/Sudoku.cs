@@ -16,7 +16,8 @@ namespace BlazorSudoku
 
         public SudokuDomain[] Domains { get; }
 
-        public HashSet<SudokuDomain> UnsetDomains { get; }
+        public BARefSet<SudokuDomain> UnsetDomainRefs { get; }
+        public IEnumerable<SudokuDomain> UnsetDomains => this.GetDomains(UnsetDomainRefs);
 
         public Dictionary<(SudokuDomain A,SudokuDomain B),BARefSet<SudokuCell>> DomainIntersections { get; }
         public Dictionary<(SudokuDomain A,SudokuDomain B), BARefSet<SudokuCell>> DomainExceptions { get; }
@@ -118,9 +119,10 @@ namespace BlazorSudoku
                 throw new ArgumentException("All domains must have same size");
 
             Cells = cells;
-            UnsetCellRefs = new BARefSet<SudokuCell>(cellDatas.Length);
-
             Domains = domains;
+            UnsetCellRefs = new BARefSet<SudokuCell>(cellDatas.Length);
+            UnsetDomainRefs = new BARefSet<SudokuDomain>(domainDatas.Length);
+
             foreach (var cell in Cells)
             {
                 if (!cell.Value.HasValue && cell.PossibleValues.Count == 0)
@@ -130,7 +132,11 @@ namespace BlazorSudoku
                     UnsetCellRefs.Add(cell);
             }
 
-            UnsetDomains = Domains.Where(x => x.Cells.Any(x => x.IsUnset)).ToHashSet();
+            foreach(var domain in Domains)
+            {
+                if (domain.Cells.Any(x => x.IsUnset))
+                    UnsetDomainRefs.Add(domain);
+            }
 
             foreach (var cell in Cells)
                 cell.Init();
@@ -164,8 +170,8 @@ namespace BlazorSudoku
             }
             foreach (var domain in Domains)
             {
-                domain.DomainBecameSet += (sender, args) => { UnsetDomains.Remove(args.Domain); };
-                domain.DomainBecameUnSet += (sender, args) => { UnsetDomains.Add(args.Domain); };
+                domain.DomainBecameSet += (sender, args) => { UnsetDomainRefs.Remove(args.Domain); };
+                domain.DomainBecameUnSet += (sender, args) => { UnsetDomainRefs.Add(args.Domain); };
             }
         }
 

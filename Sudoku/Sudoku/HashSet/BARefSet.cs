@@ -13,6 +13,8 @@ namespace BlazorSudoku
         {
         }
 
+        public BARefSet(BitArray arr) : base(arr) { }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item) => Refs[item.Key] = true;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

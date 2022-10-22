@@ -1,6 +1,4 @@
-﻿using Sudoku.Sudoku.HashSet;
-using System.Buffers;
-using System.Collections;
+﻿using System.Collections;
 using System.Runtime.CompilerServices;
 
 namespace BlazorSudoku
@@ -31,17 +29,14 @@ namespace BlazorSudoku
 
         public IEnumerable<T> Where(BA<T> refs)
         {
-            foreach(var v in data)
+            foreach (var v in data)
                 if (refs.Refs[v.Key])
                     yield return v;
         }
 
-        public bool Contains(T item)
-        {
-            return Refs[item.Key];
-        }
 
-    
+
+
 
         public IEnumerator<T> GetEnumerator() => data.GetEnumerator();
 

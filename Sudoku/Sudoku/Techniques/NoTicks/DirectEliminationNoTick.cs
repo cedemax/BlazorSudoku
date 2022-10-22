@@ -31,8 +31,9 @@ namespace BlazorSudoku.Techniques
                     {
                         // only one option remains.
                         var move = new SudokuMove("Direct elimination",0);
-                        var eliminated = new HashSet<SudokuCell>();
-                        var elimDomains = new HashSet<SudokuDomain>();
+                        var eliminated = BAPool.Get<SudokuCell>(sudoku.Cells.Length);
+                        var elimDomains = BAPool.Get<SudokuDomain>(sudoku.Domains.Length);
+
                         if (!freeCells[0].PossibleValues.Contains(value))
                             throw new InvalidOperationException("???");
                         move.Operations.Add(new SudokuAction(freeCells[0], SudokuActionType.SetValue, value, "Value set by direct elimination"));

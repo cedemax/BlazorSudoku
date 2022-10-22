@@ -1,5 +1,4 @@
 ﻿using Sudoku.Sudoku.Events;
-using Sudoku.Sudoku.HashSet;
 
 namespace BlazorSudoku
 {
@@ -9,6 +8,7 @@ namespace BlazorSudoku
         /// The cells that make up this domain
         /// </summary>
         public BASet<SudokuCell> Cells { get; }
+        public BASet<SudokuDomain> IntersectingDomains { get; }
 
         public bool Error { get; set; }
 
@@ -30,7 +30,6 @@ namespace BlazorSudoku
         public Set32 Unset { get; private set; }
         public Set32 Set { get; private set; }
 
-        public BASet<SudokuDomain> IntersectingDomains { get; }
 
         /// <summary>
         /// The domains possible values changed, but the cell did not become set

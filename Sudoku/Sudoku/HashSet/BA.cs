@@ -7,6 +7,7 @@ namespace BlazorSudoku
         public BitArray Refs { get; }
 
         public BA(int capacity) { Refs = new BitArray(capacity); }
+        public BA(BitArray arr) { Refs = arr; }
 
         public bool IsAllFalse()
         {
@@ -14,6 +15,10 @@ namespace BlazorSudoku
                 if (Refs[i])
                     return false;
             return true;
+        }
+        public bool Contains(T item)
+        {
+            return Refs[item.Key];
         }
 
         public BARefSet<T> Intersect(BA<T> other)

@@ -95,7 +95,7 @@ namespace BlazorSudoku
             SqrtN = (int)Math.Round(Math.Sqrt(N));
 
             var cells = cellDatas.Select((x, i) => new SudokuCell(x.X, x.Y, i, this,domainDatas.Length,cellDatas.Length)).ToArray();
-            var domains = domainDatas.Select((x, i) => new SudokuDomain(x.CellIndices.Select(y => cells[y]).ToHashSet(), i,this, domainDatas.Length, cellDatas.Length)).ToArray();
+            var domains = domainDatas.Select((x, i) => new SudokuDomain(x.CellIndices.Select(y => cells[y]), i,this, domainDatas.Length, cellDatas.Length)).ToArray();
 
             for(var i = 0; i < cells.Length; ++i)
             {

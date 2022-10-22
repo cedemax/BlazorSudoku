@@ -1,6 +1,4 @@
-﻿using BlazorSudoku;
-
-namespace Sudoku.Sudoku.Events
+﻿namespace BlazorSudoku
 {
     public class SudokuDomainEventArgs : EventArgs
     {

@@ -25,4 +25,11 @@
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="SavedSudokus\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+
 </Project>

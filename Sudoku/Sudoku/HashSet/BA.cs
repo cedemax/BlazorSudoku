@@ -21,6 +21,15 @@ namespace BlazorSudoku
             return Refs[item.Key];
         }
 
+        public int CountTrue()
+        {
+            int counter = 0;
+            for (var i = 0; i < Refs.Count; ++i)
+                if (Refs[i])
+                    counter++;
+            return counter;
+        }
+
         public BARefSet<T> Intersect(BA<T> other)
         {
             var set = new BARefSet<T>(Refs.Count);

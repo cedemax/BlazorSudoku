@@ -16,10 +16,11 @@ namespace BlazorSudoku.Techniques
 
             foreach (var domain in sudoku.UnsetDomains)
             {
-                if (domain.UnsetCells.Count() == 1)
+                if (domain.UnsetCellRefs.CountTrue() <= 1)
                     continue;
 
-                foreach (var value in domain.Unset)
+                // only check those values that are set in some intersecting domain. (6x perf boost)
+                foreach (var value in domain.IntersectingDomains.Select(x => x.Set).Union().Intersect(domain.Unset))
                 {
                     // check if we can restrict this value in this domain to a single cell
 

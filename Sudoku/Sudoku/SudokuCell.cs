@@ -1,8 +1,4 @@
-﻿using Sudoku.Sudoku;
-using Sudoku.Sudoku.Events;
-using System.Collections;
-
-namespace BlazorSudoku
+﻿namespace BlazorSudoku
 {
     public class SudokuCell : WithID
     {
@@ -78,7 +74,7 @@ namespace BlazorSudoku
         public int TopBorder => GetBorder(2);
         public int BottomBorder => GetBorder(3);
 
-        public SudokuCell(int x,int y, int key,Sudoku sudoku, int domainCount, int cellCount)
+        public SudokuCell(int x, int y, int key, Sudoku sudoku, int domainCount, int cellCount)
         {
             X = x;
             Y = y;
@@ -87,8 +83,8 @@ namespace BlazorSudoku
             Key = key;
             Sudoku = sudoku;
 
-            Domains = new (domainCount);
-            Visible = new (cellCount);
+            Domains = new(domainCount);
+            Visible = new(cellCount);
 
         }
 
@@ -104,7 +100,7 @@ namespace BlazorSudoku
                             Visible.Add(cell);
                 }
 
-               
+
             }
         }
 
@@ -118,9 +114,8 @@ namespace BlazorSudoku
 
         public IEnumerable<SudokuCell> ConjugatePairs(int val)
         {
-            if(IsSet || !PossibleValues.Contains(val))
+            if (IsSet || !PossibleValues.Contains(val))
                 return Enumerable.Empty<SudokuCell>();
-
 
             return VisibleUnset.Where(x =>
                 x.PossibleValues.Contains(val) &&
@@ -129,7 +124,7 @@ namespace BlazorSudoku
         public IEnumerable<SudokuCell> ConjugatePairs() => PossibleValues.SelectMany(x => ConjugatePairs(x));
 
 
-        public void SetValue(int n,bool force = false)
+        public void SetValue(int n, bool force = false)
         {
             if (force)
             {
@@ -171,7 +166,7 @@ namespace BlazorSudoku
             CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
         }
 
-        public void SetOptions(IEnumerable<int> ns,bool force = false)
+        public void SetOptions(IEnumerable<int> ns, bool force = false)
         {
             if (force)
             {
@@ -186,7 +181,7 @@ namespace BlazorSudoku
 
 
             var arr = ns.ToHashSet();
-            if(arr.Count == 1)
+            if (arr.Count == 1)
             {
                 SetOption(arr.First());
                 return;
@@ -228,16 +223,16 @@ namespace BlazorSudoku
             var count = PossibleValues.Count;
             foreach (var n in ns)
                 PossibleValues.Remove(n);
-            if(PossibleValues.Count != count)
+            if (PossibleValues.Count != count)
             {
                 if (PossibleValues.Count == 1)
                     CellBecameSet?.Invoke(this, new SudokuCellEventArgs(this));
                 else
                     PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
             }
-           
+
         }
-        public void RemoveOptions(Func<int,bool> filter)
+        public void RemoveOptions(Func<int, bool> filter)
         {
             if (IsSet)
                 throw new Exception();
@@ -251,6 +246,6 @@ namespace BlazorSudoku
                     PossibleValuesChanged?.Invoke(this, new SudokuCellEventArgs(this));
             }
         }
-        public override string ToString() => $"X:{X},Y:{Y} '{string.Join(" ",PossibleValues.Select(x => x+1))}'";
+        public override string ToString() => $"X:{X},Y:{Y} '{string.Join(" ", PossibleValues.Select(x => x + 1))}'";
     }
 }

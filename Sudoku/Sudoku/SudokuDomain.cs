@@ -1,6 +1,4 @@
-﻿using Sudoku.Sudoku.Events;
-
-namespace BlazorSudoku
+﻿namespace BlazorSudoku
 {
     public class SudokuDomain : WithID
     {
@@ -27,8 +25,11 @@ namespace BlazorSudoku
         public IEnumerable<SudokuCell> UnsetCells => Sudoku.GetCells(UnsetCellRefs);
         public IEnumerable<SudokuCell> SetCells => Sudoku.GetCells(SetCellRefs);
 
-        public Set32 Unset { get; private set; }
-        public Set32 Set { get; private set; }
+
+        private Set32 unset;
+        private Set32 set;
+        public ref Set32 Unset => ref unset;
+        public ref Set32 Set => ref set;
 
 
         /// <summary>
@@ -151,7 +152,7 @@ namespace BlazorSudoku
             if (IsCol)
                 return $"Col {Cells.First().X}";
             if (IsRow)
-                return $"Row {Cells.First().X}";
+                return $"Row {Cells.First().Y}";
 
             var xmin = Cells.Min(x => x.X);
             var ymin = Cells.Min(x => x.Y);

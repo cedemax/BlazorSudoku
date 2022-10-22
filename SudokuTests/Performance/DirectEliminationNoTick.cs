@@ -20,7 +20,7 @@ namespace SudokuTests.Performance
 #if DEBUG
             Assert.True(time < 100);
 #else
-            Assert.True(time < 20);
+            Assert.True(time < 90);
 #endif
 
         }

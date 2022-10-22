@@ -77,30 +77,28 @@
             foreach (var domain in Sudoku.GetDomains(Cells.Select(x => x.Domains).Union().Without(this)))
                 IntersectingDomains.Add(domain);
 
-            Unset = Set32.All(Sudoku.N);
-            Set = Set32.Empty;
             foreach (var cell in Cells)
             {
                 if (cell.IsSet)
-                {
                     SetCellRefs.Add(cell);
-                    Unset.ExceptWith(cell.PossibleValues);
-                    Set.UnionWith(cell.PossibleValues);
-                }
                 else
-                {
                     UnsetCellRefs.Add(cell);
-                    Unset.UnionWith(cell.PossibleValues);
-                }
             }
+            UpdateSetUnset();
+        }
+
+        private void UpdateSetUnset()
+        {
+            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
+            Set = SetCells.Select(x => x.PossibleValues).Union();
+            Unset.ExceptWith(Set);
         }
 
         private void OnCellBecameSet(object? sender, SudokuCellEventArgs args)
         {
             UnsetCellRefs.Remove(args.Cell);
             SetCellRefs.Add(args.Cell);
-            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
-            Set = SetCells.Select(x => x.PossibleValues).Union();
+            UpdateSetUnset();
 
             if (Unset.Count == 0)
                 DomainBecameSet?.Invoke(this, new SudokuDomainEventArgs(this));
@@ -110,16 +108,14 @@
         {
             UnsetCellRefs.Add(args.Cell);
             SetCellRefs.Remove(args.Cell);
-            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
-            Set = SetCells.Select(x => x.PossibleValues).Union();
+            UpdateSetUnset();
 
             DomainBecameUnSet?.Invoke(this, new SudokuDomainEventArgs(this));
         }
 
         private void OnPossibleValuesChanged(object? sender, SudokuCellEventArgs args)
         {
-            Unset = UnsetCells.Select(x => x.PossibleValues).Union();
-            Set = SetCells.Select(x => x.PossibleValues).Union();
+            UpdateSetUnset();
         }
 
         public bool Overlaps(params SudokuDomain[] others) => others.All(x => x.IntersectingDomains.Contains(this));

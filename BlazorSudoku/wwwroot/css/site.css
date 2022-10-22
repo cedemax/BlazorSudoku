@@ -154,6 +154,18 @@ a, .btn-link {
 .sudoku.done {
     background: rgba(50,200,50,0.25);
 }
+
+.sudoku > .domain {
+    border: 1px solid #000;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    background-color: rgba(0,0,0,0.125);
+    position: absolute;
+    transform-origin:center;
+    transform: rotate(45deg);
+}
+
 .sudoku > .cell {
     border: 1px solid #000;
     box-sizing: border-box;

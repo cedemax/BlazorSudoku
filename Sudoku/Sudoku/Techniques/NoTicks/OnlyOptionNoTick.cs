@@ -1,6 +1,4 @@
-﻿using BlazorSudoku;
-
-namespace BlazorSudoku
+﻿namespace BlazorSudoku
 {
 
     /// <summary>
@@ -10,12 +8,12 @@ namespace BlazorSudoku
     {
         public override int MinComplexity => 0;
 
-        public override List<SudokuMove> GetMoves(BlazorSudoku.Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue)
         {
             if (complexityLimit < MinComplexity)
                 return new();
             var moves = new List<SudokuMove>();
-            foreach (var domain in sudoku.Domains.Where(x => x.UnsetCells.Count == 1))
+            foreach (var domain in sudoku.Domains.Where(x => x.UnsetCells.Count() == 1))
             {
                 var unsetValue = domain.Unset.Except(domain.SetCells.Select(x => x.PossibleValues).Union()).FirstOrDefault(-1);
                 // the sudoku is invalid...

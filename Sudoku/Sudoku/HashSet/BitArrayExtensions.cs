@@ -16,7 +16,7 @@ namespace BlazorSudoku
         /// <param name="sudoku"></param>
         /// <param name="refs"></param>
         /// <returns></returns>
-        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku, BA refs) => GetDomains(sudoku, refs.Refs);
+        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku, BA<SudokuDomain> refs) => GetDomains(sudoku, refs.Refs);
 
         /// <summary>
         /// Returns the domains based on the references
@@ -37,7 +37,7 @@ namespace BlazorSudoku
         /// <param name="sudoku"></param>
         /// <param name="refs"></param>
         /// <returns></returns>
-        public static IEnumerable<SudokuCell> GetCells(this Sudoku sudoku, BA refs) => GetCells(sudoku, refs.Refs);
+        public static IEnumerable<SudokuCell> GetCells(this Sudoku sudoku, BA<SudokuCell> refs) => GetCells(sudoku, refs.Refs);
 
         /// <summary>
         /// Returns the domains based on the references
@@ -52,12 +52,6 @@ namespace BlazorSudoku
                     yield return sudoku.Cells[i];
         }
 
-        public static bool IsAllFalse(this BA refs)
-        {
-            for (var i = 0; i < refs.Refs.Count; ++i)
-                if (refs.Refs[i])
-                    return false;
-            return true;
-        }
+        
     }
 }

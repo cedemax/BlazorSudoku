@@ -18,8 +18,8 @@ namespace BlazorSudoku
 
         public HashSet<SudokuDomain> UnsetDomains { get; }
 
-        public Dictionary<(SudokuDomain A,SudokuDomain B),HashSet<SudokuCell>> DomainIntersections { get; }
-        public Dictionary<(SudokuDomain A,SudokuDomain B), HashSet<SudokuCell>> DomainExceptions { get; }
+        public Dictionary<(SudokuDomain A,SudokuDomain B),BARefSet<SudokuCell>> DomainIntersections { get; }
+        public Dictionary<(SudokuDomain A,SudokuDomain B), BARefSet<SudokuCell>> DomainExceptions { get; }
 
         public int N { get; }
         public int SqrtN { get; }
@@ -90,8 +90,12 @@ namespace BlazorSudoku
 
         public Sudoku(SudokuCellData[] cellDatas, SudokuDomainData[] domainDatas, string? name = null)
         {
+            Name = name ?? "Sudoku";
+            N = domainDatas[0].CellIndices.Length;
+            SqrtN = (int)Math.Round(Math.Sqrt(N));
+
             var cells = cellDatas.Select((x, i) => new SudokuCell(x.X, x.Y, i, this,domainDatas.Length,cellDatas.Length)).ToArray();
-            var domains = domainDatas.Select((x, i) => new SudokuDomain(x.CellIndices.Select(y => cells[y]).ToHashSet(), i,this)).ToArray();
+            var domains = domainDatas.Select((x, i) => new SudokuDomain(x.CellIndices.Select(y => cells[y]).ToHashSet(), i,this, domainDatas.Length, cellDatas.Length)).ToArray();
 
             for(var i = 0; i < cells.Length; ++i)
             {
@@ -102,7 +106,6 @@ namespace BlazorSudoku
                     cells[i].SetOptions(cellDatas[i].Options!, true);
             }
 
-            Name = name ?? "Sudoku";
 
             if (cells.Select(x => (x.X, x.Y)).Distinct().Count() != cells.Length)
                 throw new ArgumentException("Invalid sudoku with overlapping cells");
@@ -110,8 +113,6 @@ namespace BlazorSudoku
             if (domains.Length == 0)
                 throw new ArgumentException("At least one domain is required");
 
-            N = domains[0].Cells.Count;
-            SqrtN = (int)Math.Round(Math.Sqrt(N));
 
             if (domains.Any(x => x.Cells.Count != N))
                 throw new ArgumentException("All domains must have same size");
@@ -148,11 +149,11 @@ namespace BlazorSudoku
                     if (!DomainIntersections.TryGetValue(keyA, out var intersection))
                     {
                         var keyB = (domainB, domainA);
-                        intersection = domainA.Cells.Intersect(domainB.Cells).ToHashSet();
+                        intersection = domainA.Cells.Intersect(domainB.Cells);
                         DomainIntersections[keyA] = intersection;
                         DomainIntersections[keyB] = intersection;
                     }
-                    DomainExceptions[keyA] = domainA.Cells.Except(domainB.Cells).ToHashSet();
+                    DomainExceptions[keyA] = domainA.Cells.Except(domainB.Cells);
                 }
             }
 

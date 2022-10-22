@@ -7,13 +7,10 @@ namespace BlazorSudoku
     /// A fixed size set using a bitarray
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class BARefSet<T> : BA where T : WithID
+    public class BARefSet<T> : BA<T> where T : WithID
     {
-        public BitArray Refs { get; }
-
-        public BARefSet(int capacity)
+        public BARefSet(int capacity) : base(capacity)
         {
-            Refs = new BitArray(capacity);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

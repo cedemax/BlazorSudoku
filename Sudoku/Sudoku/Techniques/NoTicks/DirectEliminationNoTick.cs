@@ -16,7 +16,7 @@ namespace BlazorSudoku.Techniques
 
             foreach (var domain in sudoku.UnsetDomains)
             {
-                if (domain.UnsetCells.Count == 1)
+                if (domain.UnsetCells.Count() == 1)
                     continue;
 
                 foreach (var value in domain.Unset)
@@ -54,7 +54,7 @@ namespace BlazorSudoku.Techniques
                                 foreach (var elimCell in domain.UnsetCells.Where(x => x.Sees(eliminator) && !eliminated.Contains(x)))
                                 {
                                     // order here to reduce chances of using multiple domains where one would suffice
-                                    var elimDomain = elimCell.Domains.Intersect(eliminator.Domains)
+                                    var elimDomain = sudoku.GetDomains(elimCell.Domains.Intersect(eliminator.Domains))
                                         .OrderByDescending(x => sudoku.DomainIntersections[(x,domain)].Count).First();
                                     if (!elimDomains.Contains(elimDomain))
                                     {

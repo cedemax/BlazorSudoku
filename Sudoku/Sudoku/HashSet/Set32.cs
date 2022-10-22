@@ -132,7 +132,7 @@ namespace BlazorSudoku
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public static Set32 Empty => new (0);
-        public static Set32 All => new (~0u);
+        public static Set32 All(int n = MaximumSize) => new((~0u) >>> (MaximumSize - n));
 
     }
 }

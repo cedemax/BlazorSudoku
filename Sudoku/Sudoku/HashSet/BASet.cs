@@ -9,16 +9,13 @@ namespace BlazorSudoku
     /// A limited size set using a bitarray
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class BASet<T> : BA, IEnumerable<T> where T : WithID
+    public class BASet<T> : BA<T>, IEnumerable<T> where T : WithID
     {
         private readonly List<T> data;
 
-        public BitArray Refs { get; }
-
-        public BASet(int capacity)
+        public BASet(int capacity) : base(capacity)
         {
             data = new List<T>(capacity);
-            Refs = new BitArray(capacity);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,7 +29,7 @@ namespace BlazorSudoku
         public int Count => data.Count;
 
 
-        public IEnumerable<T> Where(BA refs)
+        public IEnumerable<T> Where(BA<T> refs)
         {
             foreach(var v in data)
                 if (refs.Refs[v.Key])
@@ -43,6 +40,8 @@ namespace BlazorSudoku
         {
             return Refs[item.Key];
         }
+
+    
 
         public IEnumerator<T> GetEnumerator() => data.GetEnumerator();
 

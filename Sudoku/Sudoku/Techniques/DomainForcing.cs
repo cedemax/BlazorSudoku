@@ -23,9 +23,9 @@ namespace BlazorSudoku.Techniques
                     if (cellsAB.Count >= 1 && cellsAnotB.Count >= 1 && cellsBnotA.Count >= 1)
                     {
                         // the values that can be in AB
-                        var valuesAB = cellsAB.SelectMany(x => x.PossibleValues).ToHashSet();
-                        var valuesAnotB = cellsAnotB.SelectMany(x => x.PossibleValues).ToHashSet();
-                        var valuesBnotA = cellsBnotA.SelectMany(x => x.PossibleValues).ToHashSet();
+                        var valuesAB = sudoku.GetCells(cellsAB).Select(x => x.PossibleValues).Union();
+                        var valuesAnotB = sudoku.GetCells(cellsAnotB).Select(x => x.PossibleValues).Union();
+                        var valuesBnotA = sudoku.GetCells(cellsBnotA).Select(x => x.PossibleValues).Union();
 
                         var move = new SudokuMove("Domain forcing", MinComplexity);
 
@@ -34,7 +34,7 @@ namespace BlazorSudoku.Techniques
                             // value is exclusive to AB
                             if (!valuesAnotB.Contains(value))
                             {
-                                foreach (var cell in cellsBnotA)
+                                foreach (var cell in sudoku.GetCells(cellsBnotA))
                                 {
                                     if (cell.IsSet || done.Contains((cell, value)) || !cell.PossibleValues.Contains(value))
                                         continue;
@@ -45,7 +45,7 @@ namespace BlazorSudoku.Techniques
                             // value is exclusive to AB
                             if (!valuesBnotA.Contains(value))
                             {
-                                foreach (var cell in cellsAnotB)
+                                foreach (var cell in sudoku.GetCells(cellsAnotB))
                                 {
                                     if (cell.IsSet || done.Contains((cell, value)) || !cell.PossibleValues.Contains(value))
                                         continue;

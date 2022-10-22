@@ -1,15 +1,47 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace BlazorSudoku
 {
-    public interface BA
+    public abstract class BA<T> where T : WithID
     {
         public BitArray Refs { get; }
+
+        public BA(int capacity) { Refs = new BitArray(capacity); }
+
+
+
+        public bool IsAllFalse()
+        {
+            for (var i = 0; i < Refs.Count; ++i)
+                if (Refs[i])
+                    return false;
+            return true;
+        }
+
+
+        public BARefSet<T> Intersect(BA<T> other)
+        {
+            var set = new BARefSet<T>(Refs.Count);
+            set.Refs.Or(Refs);
+            set.Refs.And(other.Refs);
+            return set;
+        }
+
+        public BARefSet<T> Union(BA<T> other)
+        {
+            var set = new BARefSet<T>(Refs.Count);
+            set.Refs.Or(Refs);
+            set.Refs.Or(other.Refs);
+            return set;
+        }
+        public BARefSet<T> Except(BA<T> other)
+        {
+            var set = new BARefSet<T>(Refs.Count);
+            set.Refs.Or(other.Refs);
+            set.Refs.Not();
+            set.Refs.And(Refs);
+            return set;
+        }
 
     }
 }

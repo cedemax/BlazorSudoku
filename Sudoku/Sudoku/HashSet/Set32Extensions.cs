@@ -15,7 +15,7 @@
         }
         public static Set32 Intersect(this IEnumerable<Set32> en)
         {
-            var ret = Set32.All;
+            var ret = Set32.All();
             var any = false;
             foreach (var e in en)
             {

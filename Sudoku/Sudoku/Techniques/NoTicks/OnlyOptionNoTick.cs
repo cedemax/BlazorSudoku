@@ -13,12 +13,9 @@
             if (complexityLimit < MinComplexity)
                 return new();
             var moves = new List<SudokuMove>();
-            foreach (var domain in sudoku.Domains.Where(x => x.UnsetCells.Count() == 1))
+            foreach (var domain in sudoku.Domains.Where(x => x.Unset.Count == 1))
             {
-                var unsetValue = domain.Unset.Except(domain.SetCells.Select(x => x.PossibleValues).Union()).FirstOrDefault(-1);
-                // the sudoku is invalid...
-                if (unsetValue < 0)
-                    return moves;
+                var unsetValue = domain.Unset.Single();
                 var move = new SudokuMove("Final Cell", 0);
                 move.Operations.Add(new SudokuAction(domain.UnsetCells.Single(), SudokuActionType.SetValue, unsetValue, "Final cell in domain"));
                 moves.Add(move);

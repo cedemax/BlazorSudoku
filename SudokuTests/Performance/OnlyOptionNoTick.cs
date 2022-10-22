@@ -6,13 +6,13 @@ namespace SudokuTests.Performance
     public partial class Performance
     {
         [Fact]
-        public void DirectEliminationNoTickPerformance()
+        public void OnlyOptionNoTickPerformance()
         {
-            var sudoku = Sudoku.Parse(File.ReadAllText("SavedSudokus/2Star.sud"));
+            var sudoku = Sudoku.Parse(File.ReadAllText("SavedSudokus/NoTickPerf.sud"));
 
-            var tech = new DirectEliminationNoMarks();
+            var tech = new OnlyOptionNoTick();
             var timer = Stopwatch.StartNew();
-            for(var i = 0; i < 100; ++i)
+            for(var i = 0; i < 10000; ++i)
             {
                 var moves = tech.GetMoves(sudoku, 999999, 999999);
             }
@@ -20,7 +20,7 @@ namespace SudokuTests.Performance
 #if DEBUG
             Assert.True(time < 100);
 #else
-            Assert.True(time < 90);
+            Assert.True(time < 200);
 #endif
 
         }

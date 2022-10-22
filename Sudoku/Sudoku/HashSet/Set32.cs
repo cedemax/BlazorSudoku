@@ -33,6 +33,8 @@ namespace BlazorSudoku
             }
         }
 
+        public bool IsEmpty => flags == 0;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(int item)
         {

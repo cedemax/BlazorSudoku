@@ -8,21 +8,13 @@ namespace SudokuTests.Performance
         [Fact]
         public void OnlyOptionNoTickPerformance()
         {
-            var sudoku = Sudoku.Parse(File.ReadAllText("SavedSudokus/NoTickPerf.sud"));
+            Test<EliminateDirect>("NoTickPerf", 1000, 100, 70);
+        }
 
-            var tech = new OnlyOptionNoTick();
-            var timer = Stopwatch.StartNew();
-            for(var i = 0; i < 10000; ++i)
-            {
-                var moves = tech.GetMoves(sudoku, 999999, 999999);
-            }
-            var time = timer.ElapsedMilliseconds;
-#if DEBUG
-            Assert.True(time < 100);
-#else
-            Assert.True(time < 200);
-#endif
-
+        [Fact]
+        public void OnlyOptionNoTickPerformance_Dry()
+        {
+            TestDry<EliminateDirect>(1000, 30, 40);
         }
     }
 }

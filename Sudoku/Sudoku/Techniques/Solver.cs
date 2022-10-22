@@ -14,7 +14,7 @@ namespace BlazorSudoku.Techniques
         }
 
         public override int MinComplexity => 10000;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue,int complexityLimit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue, bool hint = true)
         {
             var ret = new List<SudokuMove>();
             if (techs.Count == 0)

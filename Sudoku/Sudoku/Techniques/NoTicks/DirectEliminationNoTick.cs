@@ -7,7 +7,7 @@ namespace BlazorSudoku.Techniques
     {
         public override int MinComplexity => 1;
 
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {
             if (complexityLimit < MinComplexity)
                 return new();
@@ -37,7 +37,7 @@ namespace BlazorSudoku.Techniques
                         move.Operations.Add(new SudokuAction(freeCell, SudokuActionType.SetValue, value, "Value set by direct elimination"));
                         foreach (var cell in domain.UnsetCells)
                         {
-                            if (cell != freeCell)
+                            if (hint && cell != freeCell)
                                 move.Hints.Add(new SudokuCellOptionHint(cell, value, SudokuHint.Elimination));
                             if (cell != freeCell && !eliminated.Contains(cell))
                             {
@@ -46,20 +46,25 @@ namespace BlazorSudoku.Techniques
                                 if (eliminator == null)
                                     continue;
 
-                                move.Hints.Add(new SudokuCellHint(eliminator, SudokuHint.Elimination));
+                                if(hint)
+                                    move.Hints.Add(new SudokuCellHint(eliminator, SudokuHint.Elimination));
 
                                 move.Complexity++;
 
                                 foreach (var elimCell in domain.UnsetCells.Where(x => x.Sees(eliminator) && !eliminated.Contains(x)))
                                 {
-                                    // order here to reduce chances of using multiple domains where one would suffice
-                                    var elimDomain = sudoku.GetDomains(elimCell.Domains.Intersect(eliminator.Domains))
-                                        .OrderByDescending(x => sudoku.DomainIntersections[(x, domain)].Count).First();
-                                    if (!elimDomains.Contains(elimDomain))
+                                    if (hint)
                                     {
-                                        elimDomains.Add(elimDomain);
-                                        move.Hints.Add(new SudokuDomainHint(elimDomain, SudokuHint.Direct));
+                                        // order here to reduce chances of using multiple domains where one would suffice
+                                        var elimDomain = sudoku.GetDomains(elimCell.Domains.Intersect(eliminator.Domains))
+                                            .OrderByDescending(x => sudoku.DomainIntersections[(x, domain)].Count).First();
+                                        if (!elimDomains.Contains(elimDomain))
+                                        {
+                                            elimDomains.Add(elimDomain);
+                                            move.Hints.Add(new SudokuDomainHint(elimDomain, SudokuHint.Direct));
+                                        }
                                     }
+                                  
                                     eliminated.Add(elimCell);
                                 }
                             }

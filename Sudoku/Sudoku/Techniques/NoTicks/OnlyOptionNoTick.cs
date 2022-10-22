@@ -8,7 +8,7 @@
     {
         public override int MinComplexity => 0;
 
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue, bool hint = true)
         {
             if (complexityLimit < MinComplexity)
                 return new();

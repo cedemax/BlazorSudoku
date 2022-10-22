@@ -5,7 +5,7 @@ namespace BlazorSudoku.Techniques
     public class XYWing : SudokuTechnique
     {
         public override int MinComplexity => 40;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {
             if (complexityLimit < MinComplexity)
                 return new();

@@ -9,7 +9,7 @@
             this.techniques = techniques;
         }
 
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit = int.MaxValue, int complexityLimit = int.MaxValue, bool hint = true)
         {
             var solved = GetRandomSolvedSudoku(sudoku);
             var move = new SudokuMove("Generate", 0);

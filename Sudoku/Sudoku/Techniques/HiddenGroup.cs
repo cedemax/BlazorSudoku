@@ -14,7 +14,7 @@ namespace BlazorSudoku.Techniques
             this.maxGroupSize = maxGroupSize;
         }
         public override int MinComplexity => 40;
-        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit,int complexityLimit)
+        public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();

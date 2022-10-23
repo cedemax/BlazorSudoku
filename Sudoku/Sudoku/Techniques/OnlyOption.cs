@@ -11,24 +11,23 @@ namespace BlazorSudoku.Techniques
             if (complexityLimit < MinComplexity)
                 return new();
 
-            var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
+            var counts = new int[sudoku.N];
             foreach (var domain in sudoku.UnsetDomains)
             {
-                foreach (var cell in domain.UnsetCells)
+                sudoku.GetPossibleValueCounts(domain.UnsetCellRefs, ref counts);
+                for(var value = 0; value < counts.Length; ++value)
                 {
-                    foreach (var pvalue in cell.PossibleValues)
+                    if (counts[value] == 1 && domain.Unset.Contains(value))
                     {
-                        if (!domain.Cells.Any(x => x != cell && x.PossibleValues.Contains(pvalue)))
-                        {
-                            if (done.Contains((cell, pvalue)))
-                                continue;
-                            // challenge scales with more empty cells
-                            var move = new SudokuMove("Only remaining option", Math.Max(domain.Unset.Count*5,MinComplexity));
-                            move.Operations.Add(new SudokuAction(cell, SudokuActionType.SetOnlyPossible, pvalue, $"Only possible cell in domain {domain}"));
+                        // only option.
+                        var cell = domain.Cells.First(x => x.PossibleValues.Contains(value));
+
+                        var move = new SudokuMove("Only remaining option", Math.Max(domain.Unset.Count * 5, MinComplexity));
+                        move.Operations.Add(new SudokuAction(cell, SudokuActionType.SetOnlyPossible, value, $"Only possible cell in domain {domain} for value {value}"));
+                        if(hint)
                             move.Hints.Add(new SudokuDomainHint(domain, SudokuHint.Direct));
-                            moves.Add(move);
-                        }
+                        moves.Add(move);
                     }
                 }
             }

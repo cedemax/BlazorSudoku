@@ -45,7 +45,7 @@ namespace BlazorSudoku
 
         public static Sudoku Parse(string saved)
         {
-            var lines = saved.Split("\n");
+            var lines = saved.Split("\n").Select(x => x.Trim()).ToList();
             var header = lines[0].Split(' ');
             if (header[0] != "Sudoku")
                 throw new InvalidDataException("Not a sudoku");

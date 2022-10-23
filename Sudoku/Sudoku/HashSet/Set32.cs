@@ -131,6 +131,132 @@ namespace BlazorSudoku
             }
         }
 
+        public IEnumerable<Set32> GetPermutations(int n)
+        {
+            return n switch
+            {
+                1 => GetPermutations1(),
+                2 => GetPermutations2(),
+                3 => GetPermutations3(),
+                4 => GetPermutations4(),
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        private IEnumerable<Set32> GetPermutations1()
+        {
+            var min = BitOperations.TrailingZeroCount(flags);
+            var max = MaximumSize - BitOperations.LeadingZeroCount(flags);
+            var ret = Set32.Empty;
+            for (var i = min; i < max; ++i)
+            {
+                if ((flags & (1u << i)) > 0)
+                {
+                    ret.Add(i);
+                    yield return ret;
+                    ret.Remove(i);
+                }
+                ret.Clear();
+            }
+        }
+
+        private IEnumerable<Set32> GetPermutations2()
+        {
+            var min = BitOperations.TrailingZeroCount(flags);
+            var max = MaximumSize - BitOperations.LeadingZeroCount(flags);
+            var ret = Set32.Empty;
+            for (var i = min; i < max; ++i)
+            {
+                if ((flags & (1u << i)) > 0)
+                {
+                    ret.Add(i);
+                    for (var j = i + 1; j < max; ++j)
+                    {
+                        if ((flags & (1u << j)) > 0)
+                        {
+                            ret.Add(j);
+                            yield return ret;
+                            ret.Remove(j);
+                        }
+                    }
+                    ret.Remove(i);
+                }
+            }
+        }
+
+
+        private IEnumerable<Set32> GetPermutations3()
+        {
+            var min = BitOperations.TrailingZeroCount(flags);
+            var max = MaximumSize - BitOperations.LeadingZeroCount(flags);
+            var ret = Set32.Empty;
+            for (var i = min; i < max; ++i)
+            {
+                if ((flags & (1u << i)) > 0)
+                {
+                    ret.Add(i);
+                    for (var j = i + 1; j < max; ++j)
+                    {
+                        if ((flags & (1u << j)) > 0)
+                        {
+                            ret.Add(j);
+                            for (var k = j + 1; k < max; ++k)
+                            {
+                                if ((flags & (1u << k)) > 0)
+                                {
+                                    ret.Add(k);
+                                    yield return ret;
+                                    ret.Remove(k);
+                                }
+                            }
+                            ret.Remove(j);
+                        }
+                    }
+                    ret.Remove(i);
+                }
+            }
+        }
+
+        private IEnumerable<Set32> GetPermutations4()
+        {
+            var min = BitOperations.TrailingZeroCount(flags);
+            var max = MaximumSize - BitOperations.LeadingZeroCount(flags);
+            var ret = Set32.Empty;
+            for (var i = min; i < max; ++i)
+            {
+                if ((flags & (1u << i)) > 0)
+                {
+                    ret.Add(i);
+                    for (var j = i + 1; j < max; ++j)
+                    {
+                        if ((flags & (1u << j)) > 0)
+                        {
+                            ret.Add(j);
+                            for (var k = j + 1; k < max; ++k)
+                            {
+                                if ((flags & (1u << k)) > 0)
+                                {
+                                    ret.Add(k);
+                                    for (var l = k + 1; l< max; ++l)
+                                    {
+                                        if ((flags & (1u << l)) > 0)
+                                        {
+                                            ret.Add(l);
+                                            yield return ret;
+                                            ret.Remove(l);
+                                        }
+                                    }
+                                    ret.Remove(k);
+                                }
+                            }
+                            ret.Remove(j);
+                        }
+                    }
+                    ret.Remove(i);
+                }
+            }
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public static Set32 Empty => new (0);

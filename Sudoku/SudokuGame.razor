@@ -77,21 +77,26 @@
                     }
                 </div>
             }
-            @foreach(var domain in sudoku.Domains)
+            @if (false)
             {
-                <div class="domain" style="left:@(domain.Cells.Average(x => x.X)*size)px;top:@(domain.Cells.Average(x => x.Y)*size)px;">
-                    <div class="debugInfo" >
-                        @string.Join(", ",domain.Unset.Select(x => x+1))<br>
-                        @string.Join(", ",domain.Set.Select(x => x+1))
+                foreach (var domain in sudoku.Domains)
+                {
+
+                    <div class="domain" style="left:@(domain.Cells.Average(x => x.X)*size)px;top:@(domain.Cells.Average(x => x.Y)*size)px;">
+                        <div class="debugInfo">
+                            @string.Join(", ",domain.Unset.Select(x => x+1))<br>
+                            @string.Join(", ",domain.Set.Select(x => x+1))
+                        </div>
+
+                        @foreach (var cell in domain.Cells)
+                        {
+
+
+                        }
                     </div>
-
-                    @foreach(var cell in domain.Cells)
-                    {
-                
-
-                    }
-                </div>
+                }
             }
+         
             @foreach(var move in Moves)
             {
                 <div class="move">

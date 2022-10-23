@@ -9,6 +9,9 @@ namespace BlazorSudoku.Techniques
         private readonly bool allowFins;
         private readonly bool allowMutant;
 
+        public override string Name => $"Fish up to: {GetName(maxGroupSize,allowMutant?3:0,allowFins?3:0)}";
+        public override string Serialize => $"{base.Serialize}{maxGroupSize}|{allowFins}|{allowMutant}";
+
         public Fish() { maxGroupSize = 4; allowFins = true; allowMutant = true; }
         public Fish(int maxGroupSize,bool fins,bool nonColRow)
         {

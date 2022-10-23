@@ -5,6 +5,8 @@ namespace BlazorSudoku
 {
     public abstract class SudokuTechnique
     {
+        public abstract string Name { get; }
+        public virtual string Serialize => $"{GetType().Name}@";
         public abstract int MinComplexity {get;}
         public SudokuMove? GetMove(Sudoku sudoku)
         {
@@ -75,6 +77,40 @@ namespace BlazorSudoku
                     (x.BaseType != typeof(SudokuGenerator)) &&
                     (x.BaseType == typeof(SudokuTechnique) || x.BaseType!.BaseType == typeof(SudokuTechnique))
                 ).Select(x => Activator.CreateInstance(x) as SudokuTechnique).ToArray()!;
+        }
+
+        public static SudokuTechnique Deserialize(string text)
+        {
+            var parts = text.Split('@');
+            var techName = parts[0];
+            var tech = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x =>
+                    !x.IsAbstract &&
+                    (x.BaseType != typeof(SudokuGenerator)) &&
+                    (x.BaseType == typeof(SudokuTechnique) || x.BaseType!.BaseType == typeof(SudokuTechnique))
+                ).FirstOrDefault(x => x.Name == techName);
+
+            if (tech == null)
+                throw new Exception($"Did not find tech {techName}");
+
+            var args = parts[1].Split("|",StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+            Func<string,bool> boolCheck = (x) => x == "True" || x == "False";
+            Func<string,bool> intCheck = (x) => int.TryParse(x,out _);
+
+            Func<string, object> typeCheck = (x) => boolCheck(x) ? x=="True" : intCheck(x) ?int.Parse(x) : throw new Exception("Unsupported arg type");
+
+            var argsParsed = args.Select(x => typeCheck(x)).ToArray();
+
+            var constructor = tech.GetConstructor(argsParsed.Select(x => x.GetType()).ToArray());
+
+            if (constructor == null)
+                throw new Exception($"Did not find constructor with signature");
+
+            var technique = constructor.Invoke(argsParsed) as SudokuTechnique;
+            if (technique == null)
+                throw new Exception("Tech was not SudokuTechnique");
+            return technique;
         }
     }
 }

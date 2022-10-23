@@ -4,6 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class SelectOnlies : SudokuTechnique
     {
+        public override string Name => $"Cell with only one Mark";
         public override int MinComplexity => 0;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {

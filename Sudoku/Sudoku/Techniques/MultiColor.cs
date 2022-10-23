@@ -3,6 +3,7 @@ namespace BlazorSudoku.Techniques
 {
     public class MultiColor : SudokuTechnique
     {
+        public override string Name => $"Dual Color";
         public override int MinComplexity => 100;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {

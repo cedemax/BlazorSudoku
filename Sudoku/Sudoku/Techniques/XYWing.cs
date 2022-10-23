@@ -4,6 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class XYWing : SudokuTechnique
     {
+        public override string Name => $"XY-Wing";
         public override int MinComplexity => 40;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {

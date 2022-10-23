@@ -4,6 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class Solver : SudokuTechnique
     {
+        public override string Name => "Solver";
         private List<SudokuTechnique> techs;
 
         public Solver() : this(Array.Empty<SudokuTechnique>()) { }

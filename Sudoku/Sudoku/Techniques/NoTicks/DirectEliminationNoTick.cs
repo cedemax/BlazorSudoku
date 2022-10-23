@@ -1,10 +1,12 @@
-﻿using BlazorSudoku;
-using BlazorSudoku.Hints;
+﻿using BlazorSudoku.Hints;
 
 namespace BlazorSudoku.Techniques
 {
     public class DirectEliminationNoMarks : SudokuTechnique
     {
+
+        public override string Name => $"No Marks Direct Elimination";
+
         public override int MinComplexity => 1;
 
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
@@ -14,7 +16,7 @@ namespace BlazorSudoku.Techniques
 
             var moves = new List<SudokuMove>();
 
-            foreach (var domain in sudoku.Domains.Where(x => x.Set.Count < (sudoku.N-1)))
+            foreach (var domain in sudoku.Domains.Where(x => x.Set.Count < (sudoku.N - 1)))
             {
                 // only check those values that are set in some intersecting domain. 
                 foreach (var value in domain.IntersectingDomains.Select(x => x.Set).Union().Intersect(domain.Unset))
@@ -46,7 +48,7 @@ namespace BlazorSudoku.Techniques
                                 if (eliminator == null)
                                     continue;
 
-                                if(hint)
+                                if (hint)
                                     move.Hints.Add(new SudokuCellHint(eliminator, SudokuHint.Elimination));
 
                                 move.Complexity++;
@@ -64,7 +66,7 @@ namespace BlazorSudoku.Techniques
                                             move.Hints.Add(new SudokuDomainHint(elimDomain, SudokuHint.Direct));
                                         }
                                     }
-                                  
+
                                     eliminated.Add(elimCell);
                                 }
                             }

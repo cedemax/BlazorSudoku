@@ -5,6 +5,8 @@ namespace BlazorSudoku.Techniques
     public class HiddenGroup : SudokuTechnique
     {
         private readonly int maxGroupSize;
+        public override string Name => $"Hidden Group Mark Removal (Group size up to {maxGroupSize})";
+        public override string Serialize => $"{base.Serialize}{maxGroupSize}";
 
         public HiddenGroup() { maxGroupSize = 5; }
         public HiddenGroup(int maxGroupSize)

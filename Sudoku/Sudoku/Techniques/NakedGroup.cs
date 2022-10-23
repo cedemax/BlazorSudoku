@@ -4,6 +4,9 @@ namespace BlazorSudoku.Techniques
 {
     public class NakedGroup : SudokuTechnique
     {
+        public override string Name => $"Naked Group Mark Removal (Group size up to {maxGroupSize})";
+        public override string Serialize => $"{base.Serialize}{maxGroupSize}";
+
         private readonly int maxGroupSize;
 
         public NakedGroup() { maxGroupSize = 5; }

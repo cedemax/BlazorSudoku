@@ -4,6 +4,8 @@ namespace BlazorSudoku
 {
     public abstract class SudokuGenerator : SudokuTechnique
     {
+        public override string Name => GetType().Name; 
+
         protected Sudoku GetRandomSolvedSudoku(Sudoku sudoku)
         {
             for (var i = 0; i < 100; ++i)

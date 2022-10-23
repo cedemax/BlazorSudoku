@@ -4,6 +4,8 @@ namespace BlazorSudoku.Techniques
 {
     public class XYChain : ChainTechnique
     {
+        public override string Name => $"XY Chain";
+
         public override int MinComplexity => 100;
 
         protected override IEnumerable<SudokuChainNode> Starts(Sudoku sudoku)

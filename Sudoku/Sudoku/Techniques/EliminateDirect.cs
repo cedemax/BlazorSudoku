@@ -4,6 +4,8 @@ namespace BlazorSudoku.Techniques
 {
     public class EliminateDirect : SudokuTechnique
     {
+        public override string Name => $"Direct Mark Removal";
+
         public override int MinComplexity => 4;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {

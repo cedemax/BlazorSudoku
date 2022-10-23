@@ -4,6 +4,7 @@ namespace BlazorSudoku.Techniques
 {
     public class OnlyOption : SudokuTechnique
     {
+        public override string Name => $"Final Cell with specific Mark";
         public override int MinComplexity => 20;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {

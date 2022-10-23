@@ -6,6 +6,9 @@ namespace BlazorSudoku.Techniques
 
         private readonly int maxChainLength;
 
+        public override string Name => $"Single Color";
+        public override string Serialize => $"{base.Serialize}{maxChainLength}";
+
         public SimpleColor() { maxChainLength = 128; }
         public SimpleColor(int maxChainLength)
         {

@@ -1,7 +1,10 @@
-﻿namespace BlazorSudoku.Techniques.Chain
+﻿using BlazorSudoku.Techniques.Chain;
+
+namespace BlazorSudoku.Techniques
 {
     public class ContradictionChain : ChainTechnique
     {
+        public override string Name => $"Adv Chain";
         public override int MinComplexity => 100;
 
 

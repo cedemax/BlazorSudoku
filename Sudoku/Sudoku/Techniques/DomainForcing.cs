@@ -4,6 +4,8 @@ namespace BlazorSudoku.Techniques
 {
     public class DomainForcing : SudokuTechnique
     {
+        public override string Name => $"Domain Forcing Mark Removal";
+
         public override int MinComplexity => 10;
         public override List<SudokuMove> GetMoves(Sudoku sudoku, int limit, int complexityLimit, bool hint = true)
         {

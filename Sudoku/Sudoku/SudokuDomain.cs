@@ -6,6 +6,13 @@
         /// The cells that make up this domain
         /// </summary>
         public BASet<SudokuCell> Cells { get; }
+        /// <summary>
+        /// Cells in intersecting domains
+        /// </summary>
+        public BASet<SudokuCell> SeenCells { get; }
+        /// <summary>
+        /// Intersecting domains
+        /// </summary>
         public BASet<SudokuDomain> IntersectingDomains { get; }
 
         public bool Error { get; set; }
@@ -60,6 +67,7 @@
             PossibleValueRefs = Enumerable.Range(0,sudoku.N).Select(x => new BARefSet<SudokuCell>(cellCount)).ToArray();
 
             IntersectingDomains = new BASet<SudokuDomain>(domainCount);
+            SeenCells = new BASet<SudokuCell>(cellCount);
 
             foreach (var cell in cells)
                 Cells.Add(cell);
@@ -83,7 +91,12 @@
         public void Init()
         {
             foreach (var domain in Sudoku.GetDomains(Cells.Select(x => x.Domains).Union().Without(this)))
+            {
                 IntersectingDomains.Add(domain);
+                foreach(var cell in domain.Cells.Where(x => !Cells.Contains(x)))
+                    SeenCells.Add(cell);
+            }
+
 
             foreach (var cell in Cells)
             {

@@ -69,14 +69,9 @@ namespace BlazorSudoku.Techniques
             return moves;
         }
 
-        private void Fill(int n,Set32 set)
-        {
-
-        }
-
         private int GetComplexity(int n) => (n * n)* MinComplexity / 4;
 
-        private string GetName(int n)
+        private static string GetName(int n)
         {
             var name = n switch
             {

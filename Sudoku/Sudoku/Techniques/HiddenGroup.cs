@@ -20,29 +20,49 @@ namespace BlazorSudoku.Techniques
         {
             var done = new HashSet<(SudokuCell cell, int n)>();
             var moves = new List<SudokuMove>();
+
+            static bool groupTest(SudokuCell cell, Set32 mask) => !cell.PossibleValues.Intersect(mask).IsEmpty;
+
             for (var n = 2; n < maxGroupSize; ++n)
             {
-                if (GetComplexity(n) < MinComplexity)
+                if (GetComplexity(n) > complexityLimit)
                     return moves;
 
                 foreach (var domain in sudoku.UnsetDomains)
                 {
-                    if (domain.Unset.Count <= n)  // no gains
+                    // at least N+1 numbers are needed. N for the group, and 1 for removal
+                    if (domain.Unset.Count < (n + 1))
                         continue;
 
-                    foreach (var group in domain.Unset.GetCombinations(n))
+                    foreach (var mask in domain.Unset.GetPermutations(n))
                     {
-                        var move = new SudokuMove(GetName(n), GetComplexity(n));
-                        var hasAny = domain.Cells.Where(x => x.PossibleValues.Intersect(group).Any()).ToArray();
-                        if (hasAny.Length == n)  // found a group
-                            foreach (var cell in hasAny)
-                                foreach (var cv in cell.PossibleValues.Except(group))
-                                    move.Operations.Add(new SudokuAction(cell, SudokuActionType.RemoveOption, cv, $"Hidden group [{string.Join(",", group)}] excludes this value"));
-                        if (!move.IsEmpty)
+                        if (domain.UnsetCells.Count(x => groupTest(x, mask)) == n)
                         {
-                            foreach (var groupCell in hasAny)
-                                foreach(var cv in groupCell.PossibleValues.Intersect(group))
-                                    move.Hints.Add(new SudokuCellOptionHint(groupCell,cv, SudokuHint.Direct));
+                            // we found a N-group
+                            var groupCells = domain.UnsetCells.Where(x => groupTest(x, mask)).ToArray();
+                            // make sure it actually removes something
+                            var nonGroup = groupCells.Select(x => x.PossibleValues).Union().Except(mask);
+                            if (nonGroup.IsEmpty)
+                                continue;
+
+                            var move = new SudokuMove(GetName(n), GetComplexity(n));
+
+                            foreach (var groupCell in groupCells)
+                            {
+                                foreach (var valToRemove in groupCell.PossibleValues.Except(mask))
+                                {
+                                    if(hint)
+                                        move.Hints.Add(new SudokuCellOptionHint(groupCell, valToRemove, SudokuHint.Elimination));
+
+                                    move.Operations.Add(new SudokuAction(groupCell, SudokuActionType.RemoveOption, valToRemove, "Removed by hidden group"));
+                                }
+                                if (hint)
+                                {
+                                    move.Hints.Add(new SudokuCellHint(groupCell, SudokuHint.Direct));
+                                    foreach (var groupVal in groupCell.PossibleValues.Intersect(mask))
+                                        move.Hints.Add(new SudokuCellOptionHint(groupCell,groupVal,SudokuHint.Direct));
+                                }
+                            }
 
                             moves.Add(move);
                             if (moves.Count >= limit)

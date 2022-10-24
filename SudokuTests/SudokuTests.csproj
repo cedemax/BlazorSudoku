@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
+    <ProjectReference Include="..\UnsafeCode\UnsafeCode.csproj" />
   </ItemGroup>
 
   <ItemGroup>

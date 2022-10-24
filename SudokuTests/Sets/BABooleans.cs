@@ -1,6 +1,6 @@
 ﻿namespace SudokuTests.Sets
 {
-    public class UnitTest1
+    public class BABooleans
     {
         [Fact]
         public void Intersect()

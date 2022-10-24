@@ -4,31 +4,17 @@ namespace BlazorSudoku
 {
     public abstract class BA<T> where T : WithID
     {
-        public BitArray Refs { get; }
+        public CBitArray Refs { get; }
 
-        public BA(int capacity) { Refs = new BitArray(capacity); }
-        public BA(BitArray arr) { Refs = arr; }
+        public BA(int capacity) { Refs = new CBitArray(capacity); }
+        public BA(CBitArray arr) { Refs = arr; }
 
-        public bool IsAllFalse()
-        {
-            for (var i = 0; i < Refs.Count; ++i)
-                if (Refs[i])
-                    return false;
-            return true;
-        }
+        public bool IsAllFalse() => CountTrue() == 0;
         public bool Contains(T item)
         {
             return Refs[item.Key];
         }
-
-        public int CountTrue()
-        {
-            int counter = 0;
-            for (var i = 0; i < Refs.Count; ++i)
-                if (Refs[i])
-                    counter++;
-            return counter;
-        }
+        public int CountTrue() => Refs.PopCount();
 
         public BARefSet<T> Intersect(BA<T> other)
         {

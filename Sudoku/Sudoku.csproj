@@ -21,4 +21,8 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UnsafeCode\UnsafeCode.csproj" />
+  </ItemGroup>
+
 </Project>

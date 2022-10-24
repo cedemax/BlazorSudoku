@@ -24,7 +24,7 @@ namespace BlazorSudoku
         /// <param name="sudoku"></param>
         /// <param name="refs"></param>
         /// <returns></returns>
-        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku, BitArray refs)
+        public static IEnumerable<SudokuDomain> GetDomains(this Sudoku sudoku, CBitArray refs)
         {
             for (var i = 0; i < refs.Count; ++i)
                 if (refs[i])
@@ -45,7 +45,7 @@ namespace BlazorSudoku
         /// <param name="sudoku"></param>
         /// <param name="refs"></param>
         /// <returns></returns>
-        public static IEnumerable<SudokuCell> GetCells(this Sudoku sudoku, BitArray refs)
+        public static IEnumerable<SudokuCell> GetCells(this Sudoku sudoku, CBitArray refs)
         {
             for (var i = 0; i < refs.Count; ++i)
                 if (refs[i])

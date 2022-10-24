@@ -288,14 +288,60 @@ namespace BlazorSudoku
             }
         }
 
-        public IEnumerable<SudokuDomain[]> GetNonOverlappingSets(int size,IEnumerable<SudokuDomain>? domains = null)
+        /// <summary>
+        /// Returns Non overlapping sets of domains
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="domains"></param>
+        /// <returns></returns>
+        public static IEnumerable<SudokuDomain[]> GetNonOverlappingSets(int size,IEnumerable<SudokuDomain> domains)
         {
-            domains ??= Domains.Where(x => x.Unset.Any());
+            if (size < 2 || size > 4) throw new NotImplementedException();
 
-            foreach(var group in domains.GetCombinations(size))
+            var ret = new SudokuDomain[size];
+            var tmp = domains.OrderBy(x => x.Key).ToArray();
+
+            switch (size)
             {
-                if(SudokuDomain.NonOverlapping(group))
-                    yield return group;
+                case 2:
+                    for(var i = 0;i<tmp.Length; ++i)
+                        for(var j = i+1;j<tmp.Length; ++j)
+                            if (!tmp[i].IntersectingDomains.Contains(tmp[j]))
+                            {
+                                ret[0] = tmp[i];
+                                ret[1] = tmp[j];
+                                yield return ret;
+                            }
+                    yield break;
+                case 3:
+                    for (var i = 0; i < tmp.Length; ++i)
+                        for (var j = i + 1; j < tmp.Length; ++j)
+                            if (!tmp[i].IntersectingDomains.Contains(tmp[j]))
+                                for (var k = j + 1; k < tmp.Length; ++k)
+                                    if (!tmp[i].IntersectingDomains.Contains(tmp[j]) && !tmp[j].IntersectingDomains.Contains(tmp[k]))
+                                    {
+                                        ret[0] = tmp[i];
+                                        ret[1] = tmp[j];
+                                        ret[2] = tmp[k];
+                                        yield return ret;
+                                    }
+                    yield break;
+                case 4:
+                    for (var i = 0; i < tmp.Length; ++i)
+                        for (var j = i + 1; j < tmp.Length; ++j)
+                            if (!tmp[i].IntersectingDomains.Contains(tmp[j]))
+                                for (var k = j + 1; k < tmp.Length; ++k)
+                                    if (!tmp[i].IntersectingDomains.Contains(tmp[k]) && !tmp[j].IntersectingDomains.Contains(tmp[k]))
+                                        for (var l = k + 1; l < tmp.Length; ++l)
+                                            if (!tmp[i].IntersectingDomains.Contains(tmp[l]) && !tmp[j].IntersectingDomains.Contains(tmp[l]) && !tmp[k].IntersectingDomains.Contains(tmp[l]))
+                                            {
+                                                ret[0] = tmp[i];
+                                                ret[1] = tmp[j];
+                                                ret[2] = tmp[k];
+                                                ret[3] = tmp[l];
+                                                yield return ret;
+                                            }
+                    yield break;
             }
         }
 

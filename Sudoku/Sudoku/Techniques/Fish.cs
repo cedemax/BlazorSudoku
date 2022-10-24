@@ -32,8 +32,8 @@ namespace BlazorSudoku.Techniques
             var bcounts = new Dictionary<int, int>();
 
             var viableDomains = sudoku.UnsetDomains.Where(x => x.Set.Count > 0).ToArray();
+            var remainingDigits = sudoku.UnsetDomains.Select(x => x.Unset).Union();
 
-            var remainingDigits = sudoku.UnsetDomains.SelectMany(x => x.Unset).ToHashSet();
             for (var n = 2; n <= maxGroupSize; ++n)
             {
                 counts[n] = 0;
@@ -42,7 +42,7 @@ namespace BlazorSudoku.Techniques
          
             foreach (var fishDigit in remainingDigits)
             {
-                var digitViableDomains = viableDomains.Where(x => x.Unset.Contains(fishDigit)).ToArray();
+                var digitViableDomains = viableDomains.Where(x => x.PossibleValueRefs[fishDigit].CountTrue() >= 2).ToArray();
                 for (var n = 2; n <= maxGroupSize; ++n)
                 {
                     var complexity = GetComplexity(n, 0, 0);
@@ -51,43 +51,43 @@ namespace BlazorSudoku.Techniques
                     var count = 0;
                     var bcount = 0;
 
-                    var baseCandidates = new SudokuCell[n * sudoku.N];
+                    //var baseCandidates = new SudokuCell[n * sudoku.N];
                     var fishEliminations = new SudokuCell[n * sudoku.N];
                     var fins = new SudokuCell[n * sudoku.N];
                     var finEliminations = new SudokuCell[n * sudoku.N];
+                    var coverAlternatives = new SudokuDomain[digitViableDomains.Length];
+                    var coverAlternatives2 = new SudokuDomain[digitViableDomains.Length];
 
-                    foreach (var bases in sudoku.GetNonOverlappingSets(n, digitViableDomains))
+                    foreach (var bases in Sudoku.GetNonOverlappingSets(n, digitViableDomains))
                     {
                         bcount++;
-                        //var fishDigitsBase = bases.Select(x => x.Unset).Intersect();
-                        //if (fishDigitsBase.Count == 0)
-                        //    continue;
 
-                        var baseCandidatesCount = 0;
-                        foreach (var b in bases)
-                            foreach (var cell in b.Cells)
-                                if(cell.PossibleValues.Contains(fishDigit))
-                                    baseCandidates[baseCandidatesCount++] = cell;
+                        var baseCandidateRefs = bases.Select(x => x.PossibleValueRefs[fishDigit]).Union();
+                        var baseCandidatesCount = baseCandidateRefs.CountTrue();
 
+                        // not sure if this can ever happen
+                        if (baseCandidatesCount < n*2)
+                            continue;
 
-                        var coverAlternatives = digitViableDomains.Where(y => !bases.Contains(y) && y.Overlaps(bases)).ToArray();
+                        var coverAlternativesCount = digitViableDomains.Where(y => y.Overlaps(bases)).CopyTo(coverAlternatives);
 
-                        var maxFinsRemoved = coverAlternatives.ToDictionary(x => x,x => x.Cells.Intersect(baseCandidates.Take(baseCandidatesCount)).Count());
+                        //coverAlternatives = digitViableDomains.Where(y => !bases.Contains(y) && y.Overlaps(bases)).ToArray();
+                        var cas = coverAlternatives.Take(coverAlternativesCount);
 
-                        var topNminus1 = maxFinsRemoved.Values.OrderBy(x => -x).Take(n - 1).Sum();
+                        foreach (var ca in cas)
+                            ca.TempField = ca.Cells.Intersect(baseCandidateRefs).CountTrue();   // the amount of cover provided by this covering set
+
+                        var topNminus1 = cas.OrderByDescending(x => x.TempField).Take(n - 1).Sum(x => x.TempField);
+
                         // eliminate all covers that cannot possibly provide sufficient cover
-                        coverAlternatives = coverAlternatives.Where(x => (baseCandidatesCount - (maxFinsRemoved[x] + topNminus1)) <= 3).ToArray();
+                        var coverAlternativesCount2 = coverAlternatives.Take(coverAlternativesCount).Where(x => x.TempField >= 2 && (baseCandidatesCount - (x.TempField + topNminus1)) <= 3).CopyTo(coverAlternatives2);
+                        cas = coverAlternatives2.Take(coverAlternativesCount2);
 
-                        foreach (var covers in sudoku.GetNonOverlappingSets(n, coverAlternatives))
+                        foreach (var covers in Sudoku.GetNonOverlappingSets(n, cas))
                         {
                             // eliminate all covers that cannot possibly provide sufficient cover
-                            if (baseCandidatesCount - covers.Select(x => maxFinsRemoved[x]).Sum() > 3)
+                            if (baseCandidatesCount - covers.Sum(x => x.TempField) > 3)
                                 continue;
-
-                            //var fishDigits = covers.Select(x => x.Unset).Intersect();
-                            //fishDigits.IntersectWith(fishDigitsBase);
-                            //if (fishDigits.Count == 0)
-                            //    continue;
 
                             var nonColRow = bases.Concat(covers).Count(x => !x.IsColOrRow);
 
@@ -100,22 +100,15 @@ namespace BlazorSudoku.Techniques
                             if (complexityLimit < complexity)
                                 continue;
 
-                            var fishEliminationsCount = 0;
-                            foreach (var b in covers)
-                                foreach (var cell in b.Cells)
-                                    if (cell.PossibleValues.Contains(fishDigit) && !AnyRefIntersects(cell.Domains, bases))
-                                        fishEliminations[fishEliminationsCount++] = cell;
+                            var fishEliminationsCount = covers.SelectMany(x => x.Cells).Where(cell => cell.PossibleValues.Contains(fishDigit) && !AnyRefIntersects(cell.Domains, bases)).CopyTo(fishEliminations);
 
                             if (fishEliminationsCount == 0)
                                 continue;
 
                             count++;
 
-                            var finCount = 0;
-                            for (var i = 0; i < baseCandidatesCount; ++i)
-                                if (!AnyRefIntersects(baseCandidates[i].Domains, covers))
-                                    fins[finCount++] = baseCandidates[i];
-                            
+                            var finCount = sudoku.GetCells(baseCandidateRefs).Where(baseCandidate => !AnyRefIntersects(baseCandidate.Domains, covers)).CopyTo(fins);
+
                             // check if we should continue or not
                             if (!allowFins && finCount > 0)
                                 continue;
@@ -160,15 +153,18 @@ namespace BlazorSudoku.Techniques
 
                             if (!move.IsEmpty)
                             {
-                                foreach (var bd in bases)
-                                    move.Hints.Add(new SudokuDomainHint(bd, SudokuHint.Base));
-                                foreach (var cd in covers)
-                                    move.Hints.Add(new SudokuDomainHint(cd, SudokuHint.Cover));
-                                foreach (var bc in bases.SelectMany(x => x.Cells).Intersect(covers.SelectMany(x => x.Cells)).Where(x => x.PossibleValues.Contains(fishDigit)))
-                                    move.Hints.Add(new SudokuCellOptionHint(bc, fishDigit, SudokuHint.Direct));
+                                if (hint)
+                                {
+                                    foreach (var bd in bases)
+                                        move.Hints.Add(new SudokuDomainHint(bd, SudokuHint.Base));
+                                    foreach (var cd in covers)
+                                        move.Hints.Add(new SudokuDomainHint(cd, SudokuHint.Cover));
+                                    foreach (var bc in bases.SelectMany(x => x.Cells).Intersect(covers.SelectMany(x => x.Cells)).Where(x => x.PossibleValues.Contains(fishDigit)))
+                                        move.Hints.Add(new SudokuCellOptionHint(bc, fishDigit, SudokuHint.Direct));
 
-                                for (var i = 0; i < finCount; ++i)
-                                    move.Hints.Add(new SudokuCellOptionHint(fins[i], fishDigit, SudokuHint.Fin));
+                                    for (var i = 0; i < finCount; ++i)
+                                        move.Hints.Add(new SudokuCellOptionHint(fins[i], fishDigit, SudokuHint.Fin));
+                                }
 
                                 moves.Add(move);
                                 if (moves.Count >= limit)

@@ -11,6 +11,11 @@
         public bool Error { get; set; }
 
         /// <summary>
+        /// Temporary field for use in computations to avoid creation of dictionaries
+        /// </summary>
+        public int TempField { get; set;}  
+
+        /// <summary>
         /// A unique ID
         /// </summary>
         public int Key { get; }
@@ -21,6 +26,7 @@
 
         public BARefSet<SudokuCell> UnsetCellRefs { get; }
         public BARefSet<SudokuCell> SetCellRefs { get; }
+        public BARefSet<SudokuCell>[] PossibleValueRefs{ get; }
 
         public IEnumerable<SudokuCell> UnsetCells => Sudoku.GetCells(UnsetCellRefs);
         public IEnumerable<SudokuCell> SetCells => Sudoku.GetCells(SetCellRefs);
@@ -51,6 +57,8 @@
             Cells = new BASet<SudokuCell>(cellCount);
             UnsetCellRefs = new BARefSet<SudokuCell>(cellCount);
             SetCellRefs = new BARefSet<SudokuCell>(cellCount);
+            PossibleValueRefs = Enumerable.Range(0,sudoku.N).Select(x => new BARefSet<SudokuCell>(cellCount)).ToArray();
+
             IntersectingDomains = new BASet<SudokuDomain>(domainCount);
 
             foreach (var cell in cells)
@@ -84,21 +92,40 @@
                 else
                     UnsetCellRefs.Add(cell);
             }
-            UpdateSetUnset();
+            UpdateSetUnset(null);
         }
 
-        private void UpdateSetUnset()
+        private void UpdateSetUnset(SudokuCell? cell)
         {
             Unset = UnsetCells.Select(x => x.PossibleValues).Union();
             Set = SetCells.Select(x => x.PossibleValues).Union();
             Unset.ExceptWith(Set);
+
+            if(cell is not null)
+            {
+                for (var i = 0; i < PossibleValueRefs.Length; ++i)
+                    if (cell.PossibleValues.Contains(i))
+                        PossibleValueRefs[i].Add(cell);
+                    else
+                        PossibleValueRefs[i].Remove(cell);
+            }
+            else
+            {
+                for (var i = 0; i < PossibleValueRefs.Length; ++i)
+                    foreach(var c in Cells)
+                        if (c.PossibleValues.Contains(i))
+                            PossibleValueRefs[i].Add(c);
+                        else
+                            PossibleValueRefs[i].Remove(c);
+            }
         }
 
         private void OnCellBecameSet(object? sender, SudokuCellEventArgs args)
         {
             UnsetCellRefs.Remove(args.Cell);
             SetCellRefs.Add(args.Cell);
-            UpdateSetUnset();
+            UpdateSetUnset(args.Cell);
+
 
             if (Unset.Count == 0)
                 DomainBecameSet?.Invoke(this, new SudokuDomainEventArgs(this));
@@ -108,14 +135,14 @@
         {
             UnsetCellRefs.Add(args.Cell);
             SetCellRefs.Remove(args.Cell);
-            UpdateSetUnset();
+            UpdateSetUnset(args.Cell);
 
             DomainBecameUnSet?.Invoke(this, new SudokuDomainEventArgs(this));
         }
 
         private void OnPossibleValuesChanged(object? sender, SudokuCellEventArgs args)
         {
-            UpdateSetUnset();
+            UpdateSetUnset(args.Cell);
         }
 
         public bool Overlaps(params SudokuDomain[] others) => others.All(x => x.IntersectingDomains.Contains(this));
@@ -136,6 +163,15 @@
         /// <returns></returns>
         public static bool NonOverlapping(params SudokuDomain[] domains)
         {
+            var refs = BAPool.Get<SudokuCell>(domains[0].Sudoku.Cells.Length);
+            var cntr = 0;
+            for (var i = 0; i < domains.Length; i++) 
+            {
+                refs.UnionWith(domains[i].Cells);
+                cntr += domains[i].Cells.Count;
+            }
+            return refs.CountTrue() == cntr;
+
             for (var i = 0; i < domains.Length; i++)
                 for (var j = i + 1; j < domains.Length; ++j)
                     if (domains[i].IntersectingDomains.Contains(domains[j]))

@@ -18,7 +18,9 @@
             {
                 var unsetValue = domain.Unset.Single();
                 var move = new SudokuMove("Final Cell", 0);
-                move.Operations.Add(new SudokuAction(domain.UnsetCells.Single(), SudokuActionType.SetValue, unsetValue, "Final cell in domain"));
+                if (domain.UnsetCellRefs.CountTrue() > 0)
+                    continue;   // error
+                move.Operations.Add(new SudokuAction(domain.UnsetCells.First(), SudokuActionType.SetValue, unsetValue, "Final cell in domain"));
                 moves.Add(move);
             }
             return moves.OrderBy(x => x.Complexity).Take(limit).ToList();

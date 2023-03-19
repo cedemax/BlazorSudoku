@@ -11,8 +11,11 @@ namespace BlazorSudoku.Hints
             Color = color;
         }
 
+        public virtual IEnumerable<SudokuHint> AllHints => new[] { this };
+
         public static Color Fin => Color.FromArgb(66, 100, 100,0);
         public static Color Direct => Color.FromArgb(66, 0, 100, 100);
+        public static Color Positive => Color.FromArgb(150, 33, 100, 33);
         public static Color Elimination => Color.FromArgb(66, 100, 0, 0);
         public static Color Base => Color.FromArgb(66, 0, 0, 100);
         public static Color Cover => Color.FromArgb(66, 0, 100, 0);

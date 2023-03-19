@@ -31,13 +31,29 @@
         /// </summary>
         public Sudoku Sudoku { get; }
 
+        /// <summary>
+        /// References the cells that have more than one option remaining (marks)
+        /// </summary>
         public BARefSet<SudokuCell> UnsetCellRefs { get; }
+        /// <summary>
+        /// References the cells that are not yet locked by the player
+        /// </summary>
+        public BARefSet<SudokuCell> UnlockedCellRefs { get; }
+
+        /// <summary>
+        /// References the cells that have only one option remaining (marks)
+        /// </summary>
         public BARefSet<SudokuCell> SetCellRefs { get; }
+        /// <summary>
+        /// References the cells that have been locked by the player
+        /// </summary>
+        public BARefSet<SudokuCell> LockedCellRefs { get; }
         public BARefSet<SudokuCell>[] PossibleValueRefs{ get; }
 
         public IEnumerable<SudokuCell> UnsetCells => Sudoku.GetCells(UnsetCellRefs);
         public IEnumerable<SudokuCell> SetCells => Sudoku.GetCells(SetCellRefs);
-
+        public IEnumerable<SudokuCell> UnlockedCells => Sudoku.GetCells(UnlockedCellRefs);
+        public IEnumerable<SudokuCell> LockedCells => Sudoku.GetCells(LockedCellRefs);
 
         private Set32 unset;
         private Set32 set;
@@ -64,6 +80,9 @@
             Cells = new BASet<SudokuCell>(cellCount);
             UnsetCellRefs = new BARefSet<SudokuCell>(cellCount);
             SetCellRefs = new BARefSet<SudokuCell>(cellCount);
+            UnlockedCellRefs = new BARefSet<SudokuCell>(cellCount);
+            LockedCellRefs = new BARefSet<SudokuCell>(cellCount);
+
             PossibleValueRefs = Enumerable.Range(0,sudoku.N).Select(x => new BARefSet<SudokuCell>(cellCount)).ToArray();
 
             IntersectingDomains = new BASet<SudokuDomain>(domainCount);
@@ -80,6 +99,8 @@
             foreach (var cell in cells)
             {
                 cell.CellBecameSet += OnCellBecameSet;
+                cell.CellBecameLocked += OnCellBecameLocked;
+                cell.CellBecameUnlocked += OnCellBecameUnlocked;
                 cell.CellBecameUnSet += OnCellBecameUnSet;
                 cell.PossibleValuesChanged += OnPossibleValuesChanged;
             }
@@ -104,6 +125,11 @@
                     SetCellRefs.Add(cell);
                 else
                     UnsetCellRefs.Add(cell);
+
+                if (cell.Value.HasValue)
+                    LockedCellRefs.Add(cell);
+                else
+                    UnlockedCellRefs.Add(cell);
             }
             UpdateSetUnset(null);
         }
@@ -133,6 +159,16 @@
             }
         }
 
+        private void OnCellBecameLocked(object? sender, SudokuCellEventArgs args)
+        {
+            UnlockedCellRefs.Remove(args.Cell);
+            LockedCellRefs.Add(args.Cell);
+        }
+        private void OnCellBecameUnlocked(object? sender, SudokuCellEventArgs args)
+        {
+            UnlockedCellRefs.Add(args.Cell);
+            LockedCellRefs.Remove(args.Cell);
+        }
         private void OnCellBecameSet(object? sender, SudokuCellEventArgs args)
         {
             UnsetCellRefs.Remove(args.Cell);

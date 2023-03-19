@@ -100,24 +100,36 @@
             @foreach(var move in Moves)
             {
                 <div class="move">
-                    @foreach(var hint in move.Hints)
+                    @foreach(var hint in move.Hints.SelectMany(x => x.AllHints))
                     {
+                        var color = $"rgba({hint.Color.R}, {hint.Color.G}, {hint.Color.B},{hint.Color.A / 255.0})";
+
                         switch (hint)
                         {
                             case SudokuCellHint cellHint:
-                                <div class="hint">
-                                <div class="subHint" style="left:@(cellHint.Cell.X*size)px;top:@(cellHint.Cell.Y*size)px;width:@(size)px;height:@(size)px;background-color:rgba(@cellHint.Color.R,@cellHint.Color.G,@cellHint.Color.B,@(cellHint.Color.A/255.0))">
-                                </div>
-                                </div>
-                                break;
-                            case SudokuDomainHint domainHint:
-                                <div class="hint">
-                                    @foreach(var dCell in domainHint.Domain.Cells)
-                                    {
-                                        <div class="subHint" style="left:@(dCell.X*size)px;top:@(dCell.Y*size)px;width:@(size)px;height:@(size)px;background-color:rgba(@domainHint.Color.R,@domainHint.Color.G,@domainHint.Color.B,@(domainHint.Color.A/255.0))">
+                                {
+                                    var cs = cellHint.Fill ? "background-color" : "color";
+                                    var style = cellHint.Fill ? "fill" : "border";
+                                    <div class="hint">
+                                        <div class="subHint subHint-@style" style="left:@(cellHint.Cell.X*size)px;top:@(cellHint.Cell.Y*size)px;width:@(size)px;height:@(size)px;@cs:@color">
                                         </div>
-                                    }
-                                </div>
+                                    </div>
+                                    break;
+                                }
+
+                            case SudokuDomainHint domainHint:
+                                {
+                                    var cs = domainHint.Fill ? "background-color" : "color";
+                                    var style = domainHint.Fill ? "fill" : "border";
+                                    var xmin = domainHint.Domain.Cells.Min(x => x.X);
+                                    var xmax = domainHint.Domain.Cells.Max(x => x.X)+1;
+                                    var ymin = domainHint.Domain.Cells.Min(x => x.Y);
+                                    var ymax = domainHint.Domain.Cells.Max(x => x.Y)+1;
+                                    <div class="hint">
+                                        <div class="subHint subHint-@style" style="left:@(xmin*size)px;top:@(ymin*size)px;width:@(size*(xmax-xmin))px;height:@(size*(ymax-ymin))px;@cs:@color">
+                                        </div>
+                                    </div>
+                                }
                                 break;
                             case SudokuCellOptionHint cellOptionHint:
                                 {

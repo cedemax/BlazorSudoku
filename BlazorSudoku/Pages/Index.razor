@@ -78,9 +78,10 @@
     {
         var val = (string)changeEvent.Value;
         var generator = SudokuGenerator.GetAllGenerators().First(x => x.GetType().Name == val);
+
         var moves = generator.GetMoves(sudoku);
         foreach (var move in moves)
             move.Perform(sudoku);
-        game.Step();
+        game.Step(false);
     }
 }

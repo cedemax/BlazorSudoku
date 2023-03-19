@@ -221,6 +221,9 @@ a, .btn-link {
     position: absolute;
     text-align:center;
 }
+.sudoku > .move > .hint > .subHint.subHint-border {
+    box-shadow:0px -1px 0px 4px inset;
+}
 .sudoku > .move > .hint > .subHint.action {
     opacity:50%;
 }

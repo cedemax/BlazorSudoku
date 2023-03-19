@@ -7,8 +7,7 @@ namespace BlazorSudoku.Generators
     {
         public GrandMaster() : base(new SudokuTechnique[]
         {
-            new DirectEliminationNoMarks(),
-            new OnlyOptionNoTick(),
+            new NoMarksInferrence(),
             new EliminateDirect(),
             new DomainForcing(),
             new NakedGroup(),

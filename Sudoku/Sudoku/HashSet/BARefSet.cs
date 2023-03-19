@@ -13,6 +13,7 @@ namespace BlazorSudoku
         {
         }
 
+
         public BARefSet(CBitArray arr) : base(arr) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,6 +38,7 @@ namespace BlazorSudoku
         }
 
         public int Count => Refs.Count;
+
     }
 
 }

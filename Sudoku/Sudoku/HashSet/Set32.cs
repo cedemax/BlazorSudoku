@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Specialized;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -12,7 +11,7 @@ namespace BlazorSudoku
     {
         private const int MaximumSize = sizeof(int) * 8;
 
-        public Set32() { flags= 0; count = -1; }
+        public Set32() { flags = 0; count = -1; }
         public Set32(uint value)
         {
             flags = value;
@@ -65,7 +64,7 @@ namespace BlazorSudoku
 #if DEBUG
             if (item > MaximumSize) throw new ArgumentOutOfRangeException($"Can't add value {item} to fixed size set");
 #endif
-            return flags == (1u<<item);
+            return flags == (1u << item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,6 +109,9 @@ namespace BlazorSudoku
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Set32 Not(Set32 mask) => new(mask.flags & ~flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsSet(int n) => (flags & (1u << n)) > 0;
 
 
@@ -124,13 +126,15 @@ namespace BlazorSudoku
         public IEnumerator<int> GetEnumerator()
         {
             var min = BitOperations.TrailingZeroCount(flags);
-            var max = MaximumSize-BitOperations.LeadingZeroCount(flags);
-            for(var i = min; i < max; ++i)
+            var max = MaximumSize - BitOperations.LeadingZeroCount(flags);
+            for (var i = min; i < max; ++i)
             {
-                if((flags & (1u<<i)) > 0)
+                if ((flags & (1u << i)) > 0)
                     yield return i;
             }
         }
+
+
 
         public IEnumerable<Set32> GetPermutations(int n)
         {
@@ -238,7 +242,7 @@ namespace BlazorSudoku
                                 if ((flags & (1u << k)) > 0)
                                 {
                                     ret.Add(k);
-                                    for (var l = k + 1; l< max; ++l)
+                                    for (var l = k + 1; l < max; ++l)
                                     {
                                         if ((flags & (1u << l)) > 0)
                                         {
@@ -260,7 +264,7 @@ namespace BlazorSudoku
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public static Set32 Empty => new (0);
+        public static Set32 Empty => new(0);
         public static Set32 All(int n = MaximumSize) => new((~0u) >>> (MaximumSize - n));
 
     }

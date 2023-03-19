@@ -12,7 +12,7 @@ namespace BlazorSudoku
     }
     public class SudokuMove
     {
-        public string Name { get;}
+        public string Name { get; set; }
 
         public int Complexity { get; set; }
 

@@ -15,7 +15,9 @@ namespace BlazorSudoku
                 var iter = 0;
                 do
                 {
-                    _ = workingSet.Grade(out _,null, out var solution);
+                    var grade = workingSet.Grade(out _,null, out var solution);
+                    if (grade < 0)
+                        break;
                     solution.IsValid();
                     // try again if we have failed
                     if (solution.Domains.Any(x => x.Error))

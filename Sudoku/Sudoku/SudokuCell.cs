@@ -28,6 +28,16 @@
         /// </summary>
         public event EventHandler<SudokuCellEventArgs>? CellBecameUnSet;
 
+        /// <summary>
+        /// The cell was locked by the player
+        /// </summary>
+        public event EventHandler<SudokuCellEventArgs>? CellBecameLocked;
+        /// <summary>
+        /// The cell locking was undone
+        /// </summary>
+        public event EventHandler<SudokuCellEventArgs>? CellBecameUnlocked;
+
+
 
         public bool IsSet => PossibleValues.Count == 1;
         public bool IsUnset => !IsSet;
@@ -135,6 +145,9 @@
 
             if (!PossibleValues.Contains(n))
                 throw new ArgumentException("Not possible");
+
+            if(!Value.HasValue)
+                CellBecameLocked?.Invoke(this, new SudokuCellEventArgs(this));
             Value = n;
 
             if (PossibleValues.Count != 1)
@@ -147,6 +160,8 @@
 
         public void Unset(int n)
         {
+            if(Value != null)
+                CellBecameUnlocked?.Invoke(this, new SudokuCellEventArgs(this));
             Value = null;
             PossibleValues.Clear();
             for (var i = 0; i < n; ++i)

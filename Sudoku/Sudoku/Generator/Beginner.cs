@@ -6,8 +6,7 @@ namespace BlazorSudoku.Generators
     {
         public Beginner() : base(new SudokuTechnique[]
         {
-            new DirectEliminationNoMarks(),
-            new OnlyOptionNoTick(),
+            new NoMarksInferrence(0),
         })
         {
         }

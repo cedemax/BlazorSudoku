@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace BlazorSudoku
 {
@@ -9,11 +10,14 @@ namespace BlazorSudoku
         public BA(int capacity) { Refs = new CBitArray(capacity); }
         public BA(CBitArray arr) { Refs = arr; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAllFalse() => CountTrue() == 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
             return Refs[item.Key];
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CountTrue() => Refs.PopCount();
 
         public BARefSet<T> Intersect(BA<T> other)
@@ -53,6 +57,27 @@ namespace BlazorSudoku
             set.Refs.Or(Refs);
             set.Refs.Set(other.Key, false);
             return set;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Overlaps(BA<T> other)
+        {
+            var barr = new CBitArray(Refs);
+            return barr.And(other.Refs).PopCount() > 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Contains(BA<T> other)
+        {
+            var barr = new CBitArray(Refs);
+            return barr.And(other.Refs).PopCount() == other.Refs.PopCount();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(BA<T> other)
+        {
+            var barr = new CBitArray(Refs);
+            return barr.Xor(other.Refs).PopCount() == 0;
         }
     }
 }

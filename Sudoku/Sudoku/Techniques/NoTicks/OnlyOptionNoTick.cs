@@ -14,13 +14,12 @@
             if (complexityLimit < MinComplexity)
                 return new();
             var moves = new List<SudokuMove>();
-            foreach (var domain in sudoku.Domains.Where(x => x.Unset.Count == 1))
+            foreach (var domain in sudoku.Domains.Where(x => x.UnlockedCellRefs.CountTrue() == 1))
             {
-                var unsetValue = domain.Unset.Single();
+                var unsetValue = sudoku.NMask.Except(sudoku.GetPossibleValues(domain.LockedCellRefs)).Single();
                 var move = new SudokuMove("Final Cell", 0);
-                if (domain.UnsetCellRefs.CountTrue() > 0)
-                    continue;   // error
-                move.Operations.Add(new SudokuAction(domain.UnsetCells.First(), SudokuActionType.SetValue, unsetValue, "Final cell in domain"));
+                var cell = sudoku.GetCells(domain.UnlockedCellRefs).Single();
+                move.Operations.Add(new SudokuAction(cell, SudokuActionType.SetValue, unsetValue, "Final cell in domain"));
                 moves.Add(move);
             }
             return moves.OrderBy(x => x.Complexity).Take(limit).ToList();
